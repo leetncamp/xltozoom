@@ -4,6 +4,8 @@ Create and update zoom meetings from an Excel spreadsheet
 
 ### Dependencies
 zoomus (https://github.com/actmd/zoomus) Do not pip install this. See below for more info. 
+openpyxl
+pytz
 
 ### Installation
 The zoomus python package handles creating and updating the JWT auth tokens.  Otherwise, it just a thin wrapper over the zoom apis. I found 2 issues with the zoomus python package.
