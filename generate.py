@@ -34,17 +34,17 @@ dirty = False
 headers = [item.value for item in ws[1]]
 
 
-def is_excel_open():
+def excel_is_open():
     excel = [
         item.name() for item in psutil.process_iter() if "excel" in item.name().lower()
     ]
-    debug()
+
     return bool(excel)
 
 
 def save_excel(msg):
 
-    if is_excel_open():
+    if excel_is_open():
         from tkinter import messagebox, Tk
         import tkinter
 
@@ -69,7 +69,7 @@ for row in ws.iter_rows(min_row=2):
             action = result.get("action")
             if action == "create":
                 zoomid = row[headers.index("zoomid")]
-                zoomid.value = result.get("id")
+                zoomid.value = str(result.get("id"))
                 print("Created {0}".format(result.get("topic")))
                 if not dirty:
                     dirty = True
@@ -85,9 +85,8 @@ for row in ws.iter_rows(min_row=2):
                 )
             )
         else:
-            save_excel("Warning, An exception occurred.  \n\n{}".format(ns.file, tb))
+            save_excel("Warning, An exception occurred.  \n\n{}".format(tb))
 
 
 if dirty:
-    debug()
-    save_excel("{} has been updated. Please close it without saving.".format(ns.file))
+    save_excel("{} has been updated. Please reopen it without saving.".format(ns.file))

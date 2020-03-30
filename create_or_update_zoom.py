@@ -77,7 +77,6 @@ results = {}
 def create_or_update_zoom(excel_data):
     starttime = excel_data.get("starttime")
     endtime = excel_data.get("endtime")
-       
     if starttime and endtime:
         timezone_name = excel_data.get("timezone")
         if not timezone_name:
