@@ -5,12 +5,18 @@ from pdb import set_trace as debug
 from argparse import ArgumentParser
 from openpyxl import load_workbook
 from create_or_update_zoom import create_or_update_zoom
+import traceback
 import os
 import sys
+import psutil
 
 
 parser = ArgumentParser()
-parser.add_argument("--clearAll", action="store_true", help="delete all meetings listed in schedule.xlsx")
+parser.add_argument(
+    "--clearAll",
+    action="store_true",
+    help="delete all meetings listed in schedule.xlsx",
+)
 parser.add_argument("--users", action="store_true")
 parser.add_argument("--file", default="schedule.xlsx")
 ns = parser.parse_args()
@@ -27,24 +33,61 @@ dirty = False
 
 headers = [item.value for item in ws[1]]
 
+
+def is_excel_open():
+    excel = [
+        item.name() for item in psutil.process_iter() if "excel" in item.name().lower()
+    ]
+    debug()
+    return bool(excel)
+
+
+def save_excel(msg):
+
+    if is_excel_open():
+        from tkinter import messagebox, Tk
+        import tkinter
+
+        TK_SILENCE_DEPRECATION = 1
+        window = tkinter.Tk()
+        window.wm_withdraw()
+        messagebox.showinfo("Warming", msg)
+    wb.save(ns.file)
+
+
 for row in ws.iter_rows(min_row=2):
-    data = dict(zip(headers, [item.value for item in row]))
-    integration = data.get("integration")
-    if integration in ["Zoom", None]:
-        result = create_or_update_zoom(data)
-        print("{0}: {1}".format(result.get("action").capitalize(), result.get("topic")))
-        if result.get("action") == "created":
-            zoomid = row[headers.index("zoomid")]
-            zoomid.value = result.get("id")
-            dirty = True
-        debug()
+    try:
+        data = dict(zip(headers, [item.value for item in row]))
+        integration = data.get("integration")
+        if integration in ["Zoom", None]:
+            result = create_or_update_zoom(data)
+            print(
+                "{0}: {1}".format(
+                    result.get("action").capitalize(), result.get("topic")
+                )
+            )
+            action = result.get("action")
+            if action == "create":
+                zoomid = row[headers.index("zoomid")]
+                zoomid.value = result.get("id")
+                print("Created {0}".format(result.get("topic")))
+                if not dirty:
+                    dirty = True
+            elif action == "skipped":
+                print(action)
+    except:
+        tb = traceback.format_exc()
+        if dirty:
+            save_excel(
+                "Warning, An exception occurred. However, before that exception occurred, the file, {},  was modifed by this \
+                script with updated information about zoom meetings. Please close the file in Excel without saving if it is open. \n\n{}".format(
+                    ns.file, tb
+                )
+            )
+        else:
+            save_excel("Warning, An exception occurred.  \n\n{}".format(ns.file, tb))
 
 
 if dirty:
-    from tkinter import messagebox
-    
-    
-    messagebox.showinfo("Warning","{} has been updated. Please reopen it without saving.".format(ns.filenmae))
-
-
-
+    debug()
+    save_excel("{} has been updated. Please close it without saving.".format(ns.file))
