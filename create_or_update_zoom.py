@@ -203,8 +203,8 @@ def create_or_update_zoom(excel_data):
                 pheaders = ['name', 'email']
                 panelistStr = excel_data.get("panelists")
                 panelist_list = [parseaddr(item) for item in panelistStr.split(",")]
-                debug()
                 plist = [dict(zip(pheaders, item)) for item in panelist_list]
+                panelist_emails = [item.get("email") for item in plist]
 
                 panelist_data = {
                     "panelists": plist
@@ -212,6 +212,15 @@ def create_or_update_zoom(excel_data):
                 result = client.webinar.add_panelists(user_id=user_id, id=existing_zoom_event.get('id'), **panelist_data)
                 if not result.ok:
                     print(json.loads(response.content))
+                """Remove panelists that are not listed in the source (excel) data"""
+                result = client.webinar.list_panelists(user_id=user_id, id=existing_zoom_event.get("id"))
+                if result.ok:
+                    listed_panelists = json.loads(result.content).get("panelists")
+                    to_be_removed = [item for item in listed_panelists if not item.get("email") in panelist_emails ]
+                    for webinar_panelist in to_be_removed:
+                        pid = webinar_panelist.get("id")
+                        result = client.webinar.remove_a_panelist(user_id=user_id, id=existing_zoom_event.get("id"), panelistid=pid)
+
 
             return(return_val)
         else:

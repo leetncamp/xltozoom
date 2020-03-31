@@ -95,8 +95,23 @@ class WebinarComponentV2(base.BaseComponent):
 
     def list_panelists(self, **kwargs):
         util.require_keys(kwargs, "id")
-        result = self.post_request(
+        result = self.get_request(
             "/webinars/{}/panelists".format(kwargs.get('id')), params=kwargs
+            )
+        return(result)
+    
+    def remove_panelists(self, **kwargs):
+        util.require_keys(kwargs, "id")
+        result = self.delete_request(
+            "/webinars/{}/panelists".format(kwargs.get('id')), params=kwargs
+            )
+        return(result)
+    
+    def remove_a_panelist(self, **kwargs):
+        util.require_keys(kwargs, "id")
+        util.require_keys(kwargs, "panelistid")
+        result = self.delete_request(
+            "/webinars/{}/panelists/{}".format(kwargs.get('id'), kwargs.get("panelistid")), params=kwargs
             )
         return(result)
 
