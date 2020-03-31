@@ -11,6 +11,7 @@ import pytz
 from pdb import set_trace as debug
 from argparse import ArgumentParser
 import copy
+from email.utils import parseaddr
 
 parser = ArgumentParser()
 parser.add_argument("--clearAll", action="store_true", help="delete any existing webinars that start with AIWeb")
@@ -197,6 +198,21 @@ def create_or_update_zoom(excel_data):
                 return_val = {}
             return_val['status'] = result.ok
             return_val['action'] = action
+
+            if meeting_type == "webinar":
+                pheaders = ['name', 'email']
+                panelistStr = excel_data.get("panelists")
+                panelist_list = [parseaddr(item) for item in panelistStr.split(",")]
+                debug()
+                plist = [dict(zip(pheaders, item)) for item in panelist_list]
+
+                panelist_data = {
+                    "panelists": plist
+                }
+                result = client.webinar.add_panelists(user_id=user_id, id=existing_zoom_event.get('id'), **panelist_data)
+                if not result.ok:
+                    print(json.loads(response.content))
+
             return(return_val)
         else:
             return({"action": "skipped due to incorrect meeting type in meeting_or_webinar: {}".format(excel_data.get("title"))})

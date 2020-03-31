@@ -93,6 +93,13 @@ class WebinarComponentV2(base.BaseComponent):
             )
         return(result)
 
+    def list_panelists(self, **kwargs):
+        util.require_keys(kwargs, "id")
+        result = self.post_request(
+            "/webinars/{}/panelists".format(kwargs.get('id')), params=kwargs
+            )
+        return(result)
+
     def get(self, **kwargs):
         util.require_keys(kwargs, "id")
         return self.get_request("/webinars/{}".format(kwargs.get("id")), params=kwargs)
