@@ -22,6 +22,7 @@ ns = parser.parse_args()
 from secrets import *
 mytz = pytz.timezone("America/Los_Angeles")
 UTC = pytz.timezone("UTC")
+NOW = datetime.datetime.now()
 
 integrations_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(integrations_dir, "zoomus"))
@@ -72,12 +73,71 @@ roundingerror = datetime.timedelta(microseconds=5)
 #            print(result.content)
 #    sys.exit()
 
+webinar_update_errors = {
+    200: "Webinar subscription plan is missing.",
+    204: "Webinar Updated",
+    300: "Invalid webinar Id or Invalid recurrence settings",
+    400: "Bad Request.  Invalid User or access denied to the meeting. Are you the host?",
+}
+
+meeting_update_errors = {
+    204: "Meeting Updated",
+    300: "Invalid enforce_login_domains, separate multiple domains by semicolon, OR The maximum of meetings can be created/updated for a single user in one day.",
+    400: "Bad Request. Invalid User. Are you the host?"
+}
+
 
 results = {}
+
+
+
+existing_zoom_events = {}
+existing_checked = False
+
+
+def get_existing_meetings():
+
+    global existing_zoom_events
+    global existing_checked
+
+    existing_meetings_result = client.meeting.list(user_id=user_id, page_size=300)
+    if existing_meetings_result.ok:
+        emresults = json.loads(existing_meetings_result.content)
+        existing_meeting_list = emresults.get("meetings")
+        existing_zoom_events = {item.get("agenda"): item for item in existing_meeting_list}
+        print("Found {} existing meetings".format(len(existing_zoom_events)))
+        print("Total reported: {}".format(emresults.get("total_records")))
+
+    existing_webinars_result = client.webinar.list(user_id=user_id, page_size=300)
+    if existing_webinars_result.ok:
+        emresults = json.loads(existing_webinars_result.content)
+        existing_webinar_list = emresults.get("webinars")
+        print("Found {} existing webinars".format(len(existing_webinar_list)))
+        print("Total reported: {}".format(emresults.get("total_records")))
+        existing_webinars = {item.get("agenda"): item for item in existing_webinar_list}
+
+    existing_zoom_events.update(existing_webinars) 
+    existing_checked = True
+    
+    try:
+        del existing_zoom_events[None]
+    except KeyError:
+        pass
+
+
+
+
+
 
 def create_or_update_zoom(excel_data):
 
     """Handle starttime and endtime as strings or naive datetime objects depending on how the user typed them in"""
+
+    global existing_zoom_events
+    global existing_checked
+
+    if not existing_checked:
+        get_existing_meetings() #Leave a dictionary of existing zoom events in the global namespace
 
     starttime = excel_data.get("starttime")
     endtime = excel_data.get("endtime")
@@ -104,39 +164,47 @@ def create_or_update_zoom(excel_data):
         utc_endtime = UTC.normalize(endtime).strftime(timeformat)
         meeting_type = excel_data.get("meeting_or_webinar")
 
-        #if excel_data.get("peerreviewid") == "Workshopapplication-36":
-        #    debug()
 
         """Update an existing meeting if there is one noted in the excel spreadsheet"""
-        existing_meeting_id = excel_data.get("zoomid")
         
         if meeting_type in ['meeting', "webinar"]:
-            if existing_meeting_id:
-                """Update an existing meeting"""
-                existing_meeting = eval("client.{0}.get(user_id=int({1}), meetingId={2}".format(meeting_type, user_id, existing_meeting_id))
-            else:
-                """"Create a new meeting or webinar"""
-                zoom_data = copy.copy(eval("{0}_defaults".format(meeting_type)))
+            peerreviewid = excel_data.get("peerreviewid")
+            existing_zoom_event = existing_zoom_events.get(peerreviewid)
+            action = "update" if existing_zoom_event else "create"
+            """"Create or update a new meeting or webinar"""
+            zoom_data = copy.copy(eval("{0}_defaults".format(meeting_type)))
 
-                """Load the defaults definition"""
-                zoom_data = copy.copy(eval("{0}_defaults".format(meeting_type)))
-                zoom_data.update({
-                    "agenda": str(excel_data.get("peerreviewid")),
-                    "topic": excel_data.get("title"),
-                    "start_time": utc_starttime,
-                    })
-                zoom_data['recurrence'].update({"endtime": utc_endtime})
-                function_call = eval("client.{0}.create".format(meeting_type))
+            """Load the defaults definition"""
+            zoom_data = copy.copy(eval("{0}_defaults".format(meeting_type)))
+            zoom_data.update({
+                "agenda": str(peerreviewid),
+                "topic": excel_data.get("title"),
+                "start_time": utc_starttime,
+                })
+            zoom_data['recurrence'].update({"endtime": utc_endtime})
+            if existing_zoom_event:
+                function_call = eval("client.{0}.{1}".format(meeting_type, action))
+                result = function_call(user_id=user_id, id=existing_zoom_event.get("id"), **zoom_data)
+                if result.status_code != 204:
+                    error_msg = eval("{0}_update_errors.get({1})".format(meeting_type, result.status_code))
+                    print("An abnormal return code received when updating {0}. ".format(peerreviewid, error_msg))
+            else:
+                function_call = eval("client.{0}.{1}".format(meeting_type, action))
                 result = function_call(user_id=user_id, **zoom_data)
+            if result.content:
                 return_val = json.loads(result.content)
-                return_val['status'] = result.ok
-                return_val['action'] = "create"
+            else:
+                return_val = {}
+            return_val['status'] = result.ok
+            return_val['action'] = action
             return(return_val)
         else:
             return({"action": "skipped due to incorrect meeting type in meeting_or_webinar: {}".format(excel_data.get("title"))})
 
+
     else:
-        return({"action": "skipped due to no start or no end time".format(excel_data.get("title"))})
+        return({"action":"skipped"})
+        return({"action": "skipped due to no start or no end time: {}".format(excel_data.get("title"))})
 
 
 

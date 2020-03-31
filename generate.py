@@ -9,7 +9,7 @@ import traceback
 import os
 import sys
 import psutil
-
+from secrets import graphical_warning
 
 parser = ArgumentParser()
 parser.add_argument("--clearAll", action="store_true", help="delete all meetings listed in schedule.xlsx",)
@@ -40,13 +40,17 @@ def excel_is_open():
 def save_excel(msg):
 
     if excel_is_open():
-        from tkinter import messagebox, Tk
-        import tkinter
-        TK_SILENCE_DEPRECATION = 1
-        window = tkinter.Tk()
-        window.wm_withdraw()
-        messagebox.showinfo("Warming", msg)
+        if graphical_warning:
+            from tkinter import messagebox, Tk
+            import tkinter
+            window = tkinter.Tk()
+            window.wm_withdraw()
+            messagebox.showinfo("Warming", msg)
+        else:
+            print(msg)
+            input("Press Enter to save schedule.xlsx with updated information.  Press ^c otherwise. ")
     wb.save(excelpath)
+    sys.exit()
 
 
 for row in ws.iter_rows(min_row=2):
@@ -55,10 +59,9 @@ for row in ws.iter_rows(min_row=2):
         integration = data.get("integration")
         if integration in ["Zoom", None]:
             result = create_or_update_zoom(data)
-            print("{0}: {1}".format(result.get("action").capitalize(), result.get("topic")))
+
+            
             action = result.get("action")
-            #if data.get("peerreviewid") == "Workshopapplication-36":
-            #    debug()
 
             if action == "create":
                 zoomid = row[headers.index("zoomid")]
@@ -66,8 +69,7 @@ for row in ws.iter_rows(min_row=2):
                 print("Created {0}".format(result.get("topic")))
                 if not dirty:
                     dirty = True
-            elif action == "skipped":
-                print(action)
+
     except:
         tb = traceback.format_exc()
         if dirty:
