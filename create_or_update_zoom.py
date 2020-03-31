@@ -28,6 +28,7 @@ sys.path.append(os.path.join(integrations_dir, "zoomus"))
 import copy
 
 timeformat = "%Y-%m-%dT%H:%M:00Z"   # the python datetime object should be in UTC time.
+roundingerror = datetime.timedelta(microseconds=5)
 
 
 #if ns.clearAll:
@@ -75,19 +76,36 @@ timeformat = "%Y-%m-%dT%H:%M:00Z"   # the python datetime object should be in UT
 results = {}
 
 def create_or_update_zoom(excel_data):
+
+    """Handle starttime and endtime as strings or naive datetime objects depending on how the user typed them in"""
+
     starttime = excel_data.get("starttime")
     endtime = excel_data.get("endtime")
+    
     if starttime and endtime:
+        
+        if type(starttime) == str:
+            starttime = datetime.datetime.strptime(starttime, "%Y-%m-%dT%H:%M:00Z")
+            endtime = datetime.datetime.strptime(endtime, "%Y-%m-%dT%H:%M:00Z")
+
+    
         timezone_name = excel_data.get("timezone")
         if not timezone_name:
             timezone_name = "UTC"
         TZ = pytz.timezone(timezone_name)
-        starttime = TZ.localize(datetime.datetime.strptime(starttime, "%Y-%m-%dT%H:%M:00Z"))
-        endtime = TZ.localize(datetime.datetime.strptime(endtime, "%Y-%m-%dT%H:%M:00Z"))
+
+        starttime += roundingerror  #Somemtimes we get a rounding error from Excel. Round to nearest.
+        starttime = starttime.replace(microsecond=0)
+        endtime += roundingerror  
+        endtime = endtime.replace(microsecond=0)
+        starttime = TZ.localize(starttime)
+        endtime = TZ.localize(endtime)
         utc_starttime = UTC.normalize(starttime).strftime(timeformat)
         utc_endtime = UTC.normalize(endtime).strftime(timeformat)
         meeting_type = excel_data.get("meeting_or_webinar")
 
+        #if excel_data.get("peerreviewid") == "Workshopapplication-36":
+        #    debug()
 
         """Update an existing meeting if there is one noted in the excel spreadsheet"""
         existing_meeting_id = excel_data.get("zoomid")
@@ -96,7 +114,6 @@ def create_or_update_zoom(excel_data):
             if existing_meeting_id:
                 """Update an existing meeting"""
                 existing_meeting = eval("client.{0}.get(user_id=int({1}), meetingId={2}".format(meeting_type, user_id, existing_meeting_id))
-                debug()
             else:
                 """"Create a new meeting or webinar"""
                 zoom_data = copy.copy(eval("{0}_defaults".format(meeting_type)))
