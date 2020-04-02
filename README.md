@@ -29,3 +29,4 @@ You may update the start and endtimes, the timezone, title, abstracts or panelis
 
 You may import the function create_or_update_zoom directly without using excel. It takes a dictionary where the keys are the same as the column headers in the excel file. 
 
+Warning: When you add panelists to a webinar, they are immediatly sent an email invitation directly from zoom.  As of April 2, there is no way to disable this email.  Otherwise, no emails are sent.
