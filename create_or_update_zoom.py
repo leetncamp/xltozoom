@@ -13,12 +13,6 @@ from argparse import ArgumentParser
 import copy
 from email.utils import parseaddr
 
-parser = ArgumentParser()
-parser.add_argument("--clearAll", action="store_true", help="delete any existing webinars that start with AIWeb")
-parser.add_argument("--users", action="store_true")
-parser.add_argument("--meeting", action="store_true", help="create a meeting not a webinar")
-
-ns = parser.parse_args()
 
 from secrets import *
 mytz = pytz.timezone("America/Los_Angeles")
@@ -100,6 +94,8 @@ def get_existing_meetings():
 
     global existing_zoom_events
     global existing_checked
+    from .secrets import client, user_id
+
 
     existing_meetings_result = client.meeting.list(user_id=user_id, page_size=300)
     if existing_meetings_result.ok:
@@ -129,16 +125,19 @@ def get_existing_meetings():
 
 
 
-
 def create_or_update_zoom(excel_data):
 
     """Handle starttime and endtime as strings or naive datetime objects depending on how the user typed them in"""
 
     global existing_zoom_events
     global existing_checked
+    from .secrets import client, user_id, meeting_defaults, webinar_defaults
+
 
     if not existing_checked:
         get_existing_meetings() #Leave a dictionary of existing zoom events in the global namespace
+
+
 
     starttime = excel_data.get("starttime")
     endtime = excel_data.get("endtime")
@@ -149,18 +148,27 @@ def create_or_update_zoom(excel_data):
             starttime = datetime.datetime.strptime(starttime, "%Y-%m-%dT%H:%M:00Z")
             endtime = datetime.datetime.strptime(endtime, "%Y-%m-%dT%H:%M:00Z")
 
-    
-        timezone_name = excel_data.get("timezone")
-        if not timezone_name:
-            timezone_name = "UTC"
-        TZ = pytz.timezone(timezone_name)
+        elif type(starttime) == datetime.datetime:
+            if datetime.datetime.tzinfo == None:
 
-        starttime += roundingerror  #Somemtimes we get a rounding error from Excel. Round to nearest.
-        starttime = starttime.replace(microsecond=0)
-        endtime += roundingerror  
-        endtime = endtime.replace(microsecond=0)
-        starttime = TZ.localize(starttime)
-        endtime = TZ.localize(endtime)
+                """Excel has no concept of timezones. The timezone is in a column with header 'timezone'.
+                If a timezone is found in the datetime.datetime, then honor it. Otherwise, looking for a 
+                'timezone' key in the dictionary"""
+     
+                timezone_name = excel_data.get("timezone")
+                if not timezone_name:
+                    timezone_name = "UTC"
+                TZ = pytz.timezone(timezone_name)
+                starttime += roundingerror  #Somemtimes we get a rounding error from Excel. Round to nearest.
+                starttime = starttime.replace(microsecond=0)
+                endtime += roundingerror  
+                endtime = endtime.replace(microsecond=0)
+                starttime = TZ.localize(starttime)
+                endtime = TZ.localize(endtime)
+            else:
+                TZ = starttime.tzinfo
+        
+        
         utc_starttime = UTC.normalize(starttime).strftime(timeformat)
         utc_endtime = UTC.normalize(endtime).strftime(timeformat)
         meeting_type = excel_data.get("meeting_or_webinar")
@@ -169,8 +177,8 @@ def create_or_update_zoom(excel_data):
         """Update an existing meeting if there is one noted in the excel spreadsheet"""
         
         if meeting_type in ['meeting', "webinar"]:
-            peerreviewid = excel_data.get("peerreviewid")
-            existing_zoom_event = existing_zoom_events.get(peerreviewid)
+            uniqueid = excel_data.get("uniqueid")
+            existing_zoom_event = existing_zoom_events.get(uniqueid)
             action = "update" if existing_zoom_event else "create"
             """"Create or update a new meeting or webinar"""
             zoom_data = copy.copy(eval("{0}_defaults".format(meeting_type)))
@@ -178,26 +186,35 @@ def create_or_update_zoom(excel_data):
             """Load the defaults definition"""
             zoom_data = copy.copy(eval("{0}_defaults".format(meeting_type)))
             zoom_data.update({
-                "agenda": str(peerreviewid),
+                "agenda": str(uniqueid),
                 "topic": excel_data.get("title"),
                 "start_time": utc_starttime,
                 })
+
             zoom_data['recurrence'].update({"endtime": utc_endtime})
             if existing_zoom_event:
                 function_call = eval("client.{0}.{1}".format(meeting_type, action))
                 result = function_call(user_id=user_id, id=existing_zoom_event.get("id"), **zoom_data)
                 if result.status_code != 204:
                     error_msg = eval("{0}_update_errors.get({1})".format(meeting_type, result.status_code))
-                    print("An abnormal return code received when updating {0}. ".format(peerreviewid, error_msg))
+                    print("An abnormal return code received when updating {0}. ".format(uniqueid, error_msg))
             else:
                 function_call = eval("client.{0}.{1}".format(meeting_type, action))
                 result = function_call(user_id=user_id, **zoom_data)
-            if result.content:
+            if action == "create":
                 return_val = json.loads(result.content)
-            else:
-                return_val = {}
+            elif action == "update":
+                return_val = existing_zoom_events.get(excel_data.get("uniqueid"))
+            return_val['zoomid'] = return_val.get("id")
+                
+
             return_val['status'] = result.ok
             return_val['action'] = action
+
+
+            if action == "create":
+                #add this meeting to the dictionary of meeitngs. 
+                existing_zoom_events.update({return_val.get("agenda"): return_val})
 
             if meeting_type == "webinar":
                 pheaders = ['name', 'email']
@@ -233,4 +250,10 @@ def create_or_update_zoom(excel_data):
 
 
 
-   
+if __name__=="__main__":
+    parser = ArgumentParser()
+    parser.add_argument("--clearAll", action="store_true", help="delete any existing webinars that start with AIWeb")
+    parser.add_argument("--users", action="store_true")
+    parser.add_argument("--meeting", action="store_true", help="create a meeting not a webinar")
+    
+    ns = parser.parse_args()
