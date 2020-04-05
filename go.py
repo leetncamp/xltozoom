@@ -9,7 +9,7 @@ import traceback
 import os
 import sys
 import psutil
-from secrets import graphical_warning
+from zsecrets import graphical_warning
 
 parser = ArgumentParser()
 parser.add_argument("--clearAll", action="store_true", help="delete all meetings listed in schedule.xlsx",)

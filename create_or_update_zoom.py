@@ -22,6 +22,11 @@ NOW = datetime.datetime.now()
 integrations_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(integrations_dir, "zoomus"))
 sys.path.append(integrations_dir)
+parent = os.path.dirname(integrations_dir)
+
+if parent:
+    sys.path.append(parent)
+
 import copy
 
 timeformat = "%Y-%m-%dT%H:%M:00Z"   # the python datetime object should be in UTC time.
@@ -99,7 +104,7 @@ def get_existing_meetings():
 
     global existing_zoom_events
     global existing_checked
-    from secrets import client, user_id
+    from zsecrets import client, user_id
 
 
     existing_meetings_result = client.meeting.list(user_id=user_id, page_size=300)
@@ -137,7 +142,10 @@ def create_or_update_zoom(excel_data):
 
     global existing_zoom_events
     global existing_checked
-    from secrets import client, user_id, meeting_defaults, webinar_defaults
+    try:
+        from zsecrets import client, user_id, meeting_defaults, webinar_defaults
+    except ImportError:
+        debug()
 
 
     if not existing_checked:
@@ -234,10 +242,8 @@ def create_or_update_zoom(excel_data):
                 panelist_data = {
                     "panelists": plist
                 }
-                try:
-                    result = client.webinar.add_panelists(user_id=user_id, id=existing_zoom_event.get('id'), **panelist_data)
-                except:
-                    debug()
+
+                result = client.webinar.add_panelists(user_id=user_id, id=existing_zoom_event.get('id'), **panelist_data)
                 if not result.ok:
                     print(json.loads(response.content))
                 """Remove panelists that are not listed in the source (excel) data"""
