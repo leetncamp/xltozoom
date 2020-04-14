@@ -65,6 +65,7 @@ for row in ws.iter_rows(min_row=2):
 
             if action == "create":
                 zoomid = row[headers.index("zoomid")]
+                #TODO add the join_url and the start_url to the spreadsheet too
                 zoomid.value = str(result.get("id"))
                 print("Created {0}".format(result.get("topic")))
                 if not dirty:
