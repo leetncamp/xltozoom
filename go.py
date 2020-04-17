@@ -59,7 +59,7 @@ for row in ws.iter_rows(min_row=2):
         integration = data.get("integration")
         if integration in ["Zoom", None]:
             result = create_or_update_zoom(data)
-
+            debug()
             
             action = result.get("action")
 
