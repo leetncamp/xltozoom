@@ -38,7 +38,6 @@ def excel_is_open():
 
 
 def save_excel(msg):
-
     if excel_is_open():
         if graphical_warning:
             from tkinter import messagebox, Tk
@@ -59,18 +58,16 @@ for row in ws.iter_rows(min_row=2):
         integration = data.get("integration")
         if integration in ["Zoom", None]:
             result = create_or_update_zoom(data)
-            debug()
+
             
             action = result.get("action")
-
-            if action == "create":
-                zoomid = row[headers.index("zoomid")]
-                zoomid.value = str(result.get("zoomid"))
-                print("Created {0}".format(result.get("topic")))
+            zoomid = row[headers.index("zoomid")]
+            zoomid.value = str(result.get("zoomid"))
+            print("Created {0}".format(result.get("topic")))
                 
 
 
-            join_link = result.get("join_link")
+            join_link = result.get("join_url")
 
             """Update the join link each time becuase the link can change if you change the attributes of the meeting"""
             
@@ -78,7 +75,8 @@ for row in ws.iter_rows(min_row=2):
                 join_link_cell = row[headers.index("join_link")]
                 join_link_cell.value = join_link
 
-            start_link = result.get("start_link")
+            start_link = result.get("start_url")
+
 
             """Update the join link each time becuase the link can change if you change the attributes of the meeting"""
             

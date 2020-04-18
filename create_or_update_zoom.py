@@ -97,24 +97,30 @@ existing_zoom_events = {}
 existing_checked = False
 
 
-def get_existing_meetings():
+def get_existing_meetings(user_id=None):
 
     """leave two variables in the global namespace of this file: existing_zoom_events and existing_checked. Look up
     existing events here rather than hitting the API for each event.  existing_checked indicates whether existing_zoom_evnets
-    has already been loaded"""
+    has already been loaded.  user_id is an email address or zoom alphanumeric id."""
 
-    global existing_zoom_events
+    """TODO re-write this to avoid using globals.  No need for that in the currrent design where each presenter gets
+    their own license"""
+
+
     global existing_checked
-    from zsecrets import client, user_id
+    from zsecrets import client
+    if user_id and type(user_id) == str:
+        user_result = json.loads(client.user.get(id=user_id).content)
+        user_id = user_result.get('id')
+    else:
+        from zsecrets import user_id  #use the user_id in zsecrets 
 
 
     existing_meetings_result = client.meeting.list(user_id=user_id, page_size=300)
     if existing_meetings_result.ok:
         emresults = json.loads(existing_meetings_result.content)
         existing_meeting_list = emresults.get("meetings")
-        existing_zoom_events = {item.get("agenda"): item for item in existing_meeting_list}
-        print("Found {} existing meetings".format(len(existing_zoom_events)))
-        print("Total reported: {}".format(emresults.get("total_records")))
+        existing_meetings = {item.get("agenda"): item for item in existing_meeting_list}
 
     existing_webinars_result = client.webinar.list(user_id=user_id, page_size=300)
     if existing_webinars_result.ok:
@@ -126,13 +132,14 @@ def get_existing_meetings():
     else:
         print(existing_webinars_result.content)
         existing_webinars = {}
-    existing_zoom_events.update(existing_webinars) 
+
     existing_checked = True
     
     try:
         del existing_zoom_events[None]
     except KeyError:
         pass
+    return(existing_meetings, existing_webinars)
 
 
 def create_iclr2020_posterusers():
@@ -169,23 +176,25 @@ def create_or_update_zoom(excel_data):
 
     """Create or up a meeting or webinar. Excel_data is a dictionary of information with headers similar to row1 in the
     excel sample file.  Handle starttime and endtime as strings or naive datetime objects depending on how the user
-    typed them into Excel. If this function is imported into django/python, it should send a timezone aware datetime
-    object. """
+    typed them into Excel. If this function is imported into django/python, it should send timezone aware datetime
+    objects. """
 
-    global existing_zoom_events
-    global existing_checked
-    try:
-        from zsecrets import client, user_id, meeting_defaults, webinar_defaults
-    except ImportError:
-        debug()
+    from zsecrets import client, meeting_defaults, webinar_defaults
 
-    zoom_user_id = excel_data.get('zoom_user_id')
+    zoom_user_id = excel_data.get('host_zoom_user_email')  #An email address
     if zoom_user_id:
         user_result = json.loads(client.user.get(id=zoom_user_id).content)
         user_id = user_result.get('id')
 
-    if not existing_checked:
-        get_existing_meetings() #Leave a dictionary of existing zoom events in the global namespace. existing_webinars and existing_meetings for this user
+        try:
+            from zsecrets import user_id
+        except ImportError:
+            debug()
+
+
+    existing_meetings, existing_webinars = get_existing_meetings() #Leave a dictionary of existing zoom events in the global namespace. existing_webinars and existing_meetings for this user
+    exisitng_zoom_events = copy.deepcopy(existing_meetings)
+    existing_zoom_events.update(existing_webinars)
 
     #alternative_host = "iclrconf+{}@gmail.com".format(excel_data.get("uniqueid"))  #Now all meetings are hosted in their own account.
 
@@ -259,6 +268,9 @@ def create_or_update_zoom(excel_data):
                 return_val = json.loads(result.content)
             elif action == "update":
                 return_val = existing_zoom_events.get(excel_data.get(uniqueid))
+                function_call = eval("client.{}.get".format(meeting_type))
+                return_val = json.loads(function_call(id=existing_zoom_event.get('id')).content)
+                existing_zoom_events[uniqueid] = return_val
             print(return_val.get("start_url"))
             print()
             print(return_val.get("join_url"))
@@ -279,14 +291,17 @@ def create_or_update_zoom(excel_data):
                 pheaders = ['name', 'email']
                 panelistStr = excel_data.get("panelists")  #comma separated list of emails Lee Campbell<lee@salk.edu>, Brad Brockmeyer<brockmeyer@salk.edu>
                 panelist_list = [parseaddr(item) for item in panelistStr.split(",")]
-                debug()
                 plist = [dict(zip(pheaders, item)) for item in panelist_list]
+                #zoom drops a panelist if the name is empty.   
+
+                plist = [i if i.get("name") else {"name":'Name Unavailable', 'email':i.get("email")} for i in plist]
+
                 panelist_emails = [item.get("email") for item in plist]
 
                 panelist_data = {
                     "panelists": plist
                 }
-
+                
                 result = client.webinar.add_panelists(user_id=user_id, id=existing_zoom_event.get('id'), **panelist_data)
                 if not result.ok:
                     print(json.loads(response.content))
