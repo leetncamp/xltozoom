@@ -136,6 +136,7 @@ def get_existing_meetings():
 
 
 def create_iclr2020_posterusers():
+    debug()
     global existing_zoom_events
     global existing_checked
     try:
@@ -178,12 +179,16 @@ def create_or_update_zoom(excel_data):
     except ImportError:
         debug()
 
+    zoom_user_id = excel_data.get('zoom_user_id')
+    if zoom_user_id:
+        user_result = json.loads(client.user.get(id=zoom_user_id).content)
+        user_id = user_result.get('id')
 
     if not existing_checked:
-        get_existing_meetings() #Leave a dictionary of existing zoom events in the global namespace
+        get_existing_meetings() #Leave a dictionary of existing zoom events in the global namespace. existing_webinars and existing_meetings for this user
 
-    alternative_host = "iclrconf+{}@gmail.com".format(excel_data.get("uniqueid"))
-    alternative_host = "iclrconf+BJlahxHYDS@gmail.com"
+    #alternative_host = "iclrconf+{}@gmail.com".format(excel_data.get("uniqueid"))  #Now all meetings are hosted in their own account.
+
     starttime = excel_data.get("starttime")
     endtime = excel_data.get("endtime")
     
@@ -234,7 +239,8 @@ def create_or_update_zoom(excel_data):
                 "start_time": utc_starttime,
                 "password": excel_data.get("password"),
                 })
-            zoom_data['settings'].update({"alternative_hosts": alternative_host})
+            if "alternative_hosts" in locals().keys():
+                zoom_data['settings'].update({"alternative_hosts": alternative_host})
 
             zoom_data['recurrence'].update({"endtime": utc_endtime})
 
@@ -252,11 +258,11 @@ def create_or_update_zoom(excel_data):
             if action == "create":
                 return_val = json.loads(result.content)
             elif action == "update":
-                return_val = existing_zoom_events.get(excel_data.get("uniqueid"))
+                return_val = existing_zoom_events.get(excel_data.get(uniqueid))
             print(return_val.get("start_url"))
+            print()
+            print(return_val.get("join_url"))
             return_val['zoomid'] = return_val.get("id")
-                
-
             return_val['status'] = result.ok
             return_val['action'] = action
 
@@ -271,8 +277,9 @@ def create_or_update_zoom(excel_data):
                 """If this is a webinar, add the authors of the excel event as panelists"""
 
                 pheaders = ['name', 'email']
-                panelistStr = excel_data.get("panelists")
+                panelistStr = excel_data.get("panelists")  #comma separated list of emails Lee Campbell<lee@salk.edu>, Brad Brockmeyer<brockmeyer@salk.edu>
                 panelist_list = [parseaddr(item) for item in panelistStr.split(",")]
+                debug()
                 plist = [dict(zip(pheaders, item)) for item in panelist_list]
                 panelist_emails = [item.get("email") for item in plist]
 

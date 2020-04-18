@@ -65,12 +65,30 @@ for row in ws.iter_rows(min_row=2):
 
             if action == "create":
                 zoomid = row[headers.index("zoomid")]
-                #TODO add the join_url and the start_url to the spreadsheet too
-                zoomid.value = str(result.get("id"))
+                zoomid.value = str(result.get("zoomid"))
                 print("Created {0}".format(result.get("topic")))
-                if not dirty:
-                    dirty = True
+                
 
+
+            join_link = result.get("join_link")
+
+            """Update the join link each time becuase the link can change if you change the attributes of the meeting"""
+            
+            if join_link:
+                join_link_cell = row[headers.index("join_link")]
+                join_link_cell.value = join_link
+
+            start_link = result.get("start_link")
+
+            """Update the join link each time becuase the link can change if you change the attributes of the meeting"""
+            
+            if start_link:
+                start_link_cell = row[headers.index("start_link")]
+                start_link_cell.value = start_link
+
+            if not dirty:
+                dirty = True
+            
     except:
         tb = traceback.format_exc()
         if dirty:
