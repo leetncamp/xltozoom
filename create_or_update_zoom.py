@@ -12,6 +12,7 @@ from pdb import set_trace as debug
 from argparse import ArgumentParser
 import copy
 from email.utils import parseaddr
+from nameparser import HumanName
 
 
 from secrets import *
@@ -141,6 +142,32 @@ def get_existing_meetings(user_id=None):
         pass
     return(existing_meetings, existing_webinars)
 
+
+
+def create_chair_zoom_accounts():
+
+    try:
+        from zsecrets import client, user_id, meeting_defaults, webinar_defaults
+    except ImportError:
+        debug()
+
+
+
+    users = ["Timnit Gebru <tgebru+iclrzoom@gmail.com>", "Shakir Mohamed <shakir.mohamed+iclrzoom@gmail.com>", "Kyunghyun Cho <kyunghyun.cho+iclrzoom@nyu.edu>", "Asja Fischer <asja.fischer+iclrzoom@gmail.com>", "Martha White <iclrconf+mwhite@gmail.com>", "Gabriel Synnaeve <gabriel.synnaeve+iclrzoom@gmail.com>", "Dawn Song <dawnsong+iclrzoom@gmail.com>", "Alexander Rush <sasha.rush+iclrzoom@gmail.com>"]
+    for user in users:
+        pa = parseaddr(user)
+        user_info = dict(zip(['name', "email"], pa))
+        hn = HumanName(user_info.get("name"))
+        user_info.update({"first_name":hn.first, "last_name":hn.last, "type":1, "password": "dotDevRandom8chair"})
+        data = {
+            "action": "create",
+            "user_info": user_info,
+        }
+        del user_info['name']
+
+        result = client.user.create(**data)
+        if result.status_code != 409:
+            print(result.content)
 
 def create_iclr2020_posterusers():
 
@@ -332,8 +359,9 @@ def create_or_update_zoom(excel_data):
 
 
 if __name__=="__main__":
-    create_iclr2020_posterusers()
-    debug()
+    #create_iclr2020_posterusers()
+    create_chair_zoom_accounts()
+    sys.exit()
     parser = ArgumentParser()
     parser.add_argument("--clearAll", action="store_true", help="delete any existing webinars that start with AIWeb")
     parser.add_argument("--users", action="store_true")
