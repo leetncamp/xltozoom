@@ -64,9 +64,6 @@ for row in ws.iter_rows(min_row=2):
             action = result.get("action")
             zoomid = row[headers.index("zoomid")]
             zoomid.value = str(result.get("zoomid"))
-            print("Created {0}".format(result.get("topic")))
-                
-
 
             join_link = result.get("join_url")
 

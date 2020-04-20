@@ -107,7 +107,7 @@ def get_existing_meetings(user_id=None):
     their own license"""
 
 
-    global existing_checked
+
     from zsecrets import client
     if user_id and type(user_id) == str:
         user_result = json.loads(client.user.get(id=user_id).content)
@@ -144,8 +144,8 @@ def get_existing_meetings(user_id=None):
 
 def create_iclr2020_posterusers():
 
-    global existing_zoom_events
-    global existing_checked
+
+
     try:
         from zsecrets import client, user_id, meeting_defaults, webinar_defaults
     except ImportError:
@@ -186,16 +186,17 @@ def create_or_update_zoom(excel_data):
     if zoom_user_id:
         user_result = json.loads(client.user.get(id=zoom_user_id).content)
         user_id = user_result.get('id')
-
+    else:
         try:
             from zsecrets import user_id
         except ImportError:
             debug()
 
 
-    existing_meetings, existing_webinars = get_existing_meetings() #Leave a dictionary of existing zoom events in the global namespace. existing_webinars and existing_meetings for this user
-    exisitng_zoom_events = copy.deepcopy(existing_meetings)
-    existing_zoom_events.update(existing_webinars)
+    #Leave a dictionary of existing zoom events in the global namespace. existing_webinars and existing_meetings for this user
+    existing_meetings, existing_webinars = get_existing_meetings(user_id=zoom_user_id)
+    existing_meetings.update(existing_webinars)
+    existing_zoom_events = existing_meetings
 
     #alternative_host = "iclrconf+{}@gmail.com".format(excel_data.get("uniqueid"))  #Now all meetings are hosted in their own account.
 
@@ -249,11 +250,12 @@ def create_or_update_zoom(excel_data):
                 "start_time": utc_starttime,
                 "password": excel_data.get("password"),
                 })
-            if "alternative_hosts" in locals().keys():
-                zoom_data['settings'].update({"alternative_hosts": alternative_host})
+            alternative_hosts = excel_data.get("alternative_hosts")
+            if alternative_hosts:
+                zoom_data['settings'].update({"alternative_hosts": alternative_hosts})
 
             zoom_data['recurrence'].update({"endtime": utc_endtime})
-            debug()
+
             if existing_zoom_event:
                 function_call = eval("client.{0}.{1}".format(meeting_type, action))
                 result = function_call(user_id=user_id, id=existing_zoom_event.get("id"), **zoom_data)
@@ -264,7 +266,8 @@ def create_or_update_zoom(excel_data):
             if not (199 < result.status_code < 299):
                 error_msg = eval("{0}_update_errors.get({1}, '___')".format(meeting_type, result.status_code))
                 print("An abnormal return code received when updating {0}. ".format(uniqueid, error_msg))
-            
+            print("{0} {1}".format(action, zoom_data.get("topic")))
+
             if action == "create":
                 return_val = json.loads(result.content)
             elif action == "update":
@@ -272,9 +275,9 @@ def create_or_update_zoom(excel_data):
                 function_call = eval("client.{}.get".format(meeting_type))
                 return_val = json.loads(function_call(id=existing_zoom_event.get('id')).content)
                 existing_zoom_events[uniqueid] = return_val
-            print(return_val.get("start_url"))
-            print()
-            print(return_val.get("join_url"))
+            #print(return_val.get("start_url"))
+            #print()
+            #print(return_val.get("join_url"))
             return_val['zoomid'] = return_val.get("id")
             return_val['status'] = result.ok
             return_val['action'] = action
