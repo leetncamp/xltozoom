@@ -143,6 +143,67 @@ def get_existing_meetings(user_id=None):
     return(existing_meetings, existing_webinars)
 
 
+def get_all_events():
+    try:
+        from zsecrets import client, user_id, meeting_defaults, webinar_defaults
+    except ImportError:
+        debug()
+    meetings = json.loads(client.meeting.list(user_id=user_id, page_size=300).content).get("meetings")
+    #    while meetings:
+    #        print("Found {0}".format(len(meetings)))
+    #        for meeting in meetings:
+    #            name = meeting.get("topic")
+    #            if name in ["Zoom Meeting", "AIWeb", "ICLR Meeting", "Lee Campbell's Zoom Meeting"]:
+    #                result = client.meeting.delete(user_id=user_id, id=meeting.get("id"))
+    #            print(name)
+    #        meetings = json.loads(client.webinar.list(user_id=user_id, page_size=300).content).get("meetings")
+    #    sys.exit()
+
+
+    
+    results = True
+    count = 1
+    users = set()
+    while results:
+        size = len(users)
+        results = json.loads(client.user.list(page_size=300, page_number=count).content).get("users")
+        print(len(results))
+        ids =  [i.get('id') for i in results]
+        users = users.union(set(ids))
+        count += 1
+        if len(users) == size:
+            #No new names were added. Stop
+            results = False
+    
+    events = {}
+    for user in users:
+        result = client.meeting.list(user_id=user, page_size=300)
+        meetings = json.loads(result.content).get("meetings")
+        result = client.webinar.list(user_id=user, page_size=300)
+
+        webinars = json.loads(result.content).get("webinars")
+        if not webinars:
+            #If the users is unlicensed for a webinar, a None is returned. That will fail below. Change it to an empty list. 
+            webinars = []
+
+        print('.', end="")
+        sys.stdout.flush()
+
+        for meeting in meetings: 
+            meeting.update({"type":"meeting"})
+        events[user] = events.get(user, []) + meetings
+
+        for webinar in webinars: 
+            webinar.update({"type":"webinar"})
+        events[user] = events.get(user, []) + webinars
+        if meetings or webinars:
+            print(events)
+    import pickle
+    pickle.dump(events, open("/tmp/events.pickle", 'wb'))
+    print (json.dumps(events, indent=4))
+
+
+
 
 def create_chair_zoom_accounts():
 
@@ -282,7 +343,7 @@ def create_or_update_zoom(excel_data):
                 zoom_data['settings'].update({"alternative_hosts": alternative_hosts})
 
             zoom_data['recurrence'].update({"endtime": utc_endtime})
-
+            debug()
             if existing_zoom_event:
                 function_call = eval("client.{0}.{1}".format(meeting_type, action))
                 result = function_call(user_id=user_id, id=existing_zoom_event.get("id"), **zoom_data)
@@ -360,7 +421,8 @@ def create_or_update_zoom(excel_data):
 
 if __name__=="__main__":
     #create_iclr2020_posterusers()
-    create_chair_zoom_accounts()
+    #create_chair_zoom_accounts()
+    result = get_all_events()
     sys.exit()
     parser = ArgumentParser()
     parser.add_argument("--clearAll", action="store_true", help="delete any existing webinars that start with AIWeb")
