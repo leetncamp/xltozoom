@@ -98,7 +98,7 @@ existing_zoom_events = {}
 existing_checked = False
 
 
-def get_existing_meetings(user_id=None):
+def get_existing_meetings(user_id=None, client=None):
 
     """leave two variables in the global namespace of this file: existing_zoom_events and existing_checked. Look up
     existing events here rather than hitting the API for each event.  existing_checked indicates whether existing_zoom_evnets
@@ -108,8 +108,9 @@ def get_existing_meetings(user_id=None):
     their own license"""
 
 
+    if not client:
+        from zsecrets import client
 
-    from zsecrets import client
     if user_id and type(user_id) == str:
         user_result = json.loads(client.user.get(id=user_id).content)
         user_id = user_result.get('id')
@@ -211,6 +212,28 @@ def license_users():
         result = client.user.update(id=user, type=2)
         print(result.content)
 
+def create_climate_users():
+    from zsecrets import climate_user_id as user_id
+    from zsecrets import climate_client
+
+    users = ["Poster Presenter <climatechangeai.iclr2020+7@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+8@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+11@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+12@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+17@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+18@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+25@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+27@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+29@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+31@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+33@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+34@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+36@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+37@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+38@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+43@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+45@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+47@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+48@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+49@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+50@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+51@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+53@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+54@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+55@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+57@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+58@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+61@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+69@gmail.com>", "Poster Presenter <climatechangeai.iclr2020+70@gmail.com>"]
+
+    for user in users:
+        pa = parseaddr(user)
+        user_info = dict(zip(['name', "email"], pa))
+        hn = HumanName(user_info.get("name"))
+        user_info.update({"first_name":hn.first, "last_name":hn.last, "type":2, "password": "tcml_iclr"})
+        data = {
+            "action": "create",
+            "user_info": user_info,
+        }
+        del user_info['name']
+
+        result = climate_client.user.create(**data)
+        if result.status_code != 409:
+            print(result.content)
+
+
 def create_chair_zoom_accounts():
 
     try:
@@ -275,6 +298,10 @@ def create_or_update_zoom(excel_data):
     objects. """
 
     from zsecrets import client, meeting_defaults, webinar_defaults
+    #*********************************************************************
+    #from zsecrets import climate_client as client #RMEMBER TO REMOVE THIS
+    #from zsecrets import climate_user_id as user_id
+    #*********************************************************************
 
     zoom_user_id = excel_data.get('host_zoom_user_email')  #An email address
     if zoom_user_id:
@@ -286,11 +313,15 @@ def create_or_update_zoom(excel_data):
         except ImportError:
             debug()
 
+    
+
 
     #Leave a dictionary of existing zoom events in the global namespace. existing_webinars and existing_meetings for this user
-    existing_meetings, existing_webinars = get_existing_meetings(user_id=zoom_user_id)
+    existing_meetings, existing_webinars = get_existing_meetings(user_id=zoom_user_id, client=client)
     existing_meetings.update(existing_webinars)
     existing_zoom_events = existing_meetings
+
+
 
     #alternative_host = "iclrconf+{}@gmail.com".format(excel_data.get("uniqueid"))  #Now all meetings are hosted in their own account.
 
@@ -429,7 +460,8 @@ if __name__=="__main__":
     #create_iclr2020_posterusers()
     #create_chair_zoom_accounts()
     #result = get_all_events()
-    license_users()
+    #license_users()
+    create_climate_users()
     sys.exit()
     parser = ArgumentParser()
     parser.add_argument("--clearAll", action="store_true", help="delete any existing webinars that start with AIWeb")
