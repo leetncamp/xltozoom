@@ -336,8 +336,6 @@ def create_or_update_zoom(excel_data):
     existing_meetings.update(existing_webinars)
     existing_zoom_events = existing_meetings
 
-
-
     #alternative_host = "iclrconf+{}@gmail.com".format(excel_data.get("uniqueid"))  #Now all meetings are hosted in their own account.
 
     starttime = excel_data.get("starttime")
@@ -395,7 +393,7 @@ def create_or_update_zoom(excel_data):
                 zoom_data['settings'].update({"alternative_hosts": alternative_hosts})
 
             zoom_data['recurrence'].update({"endtime": utc_endtime})
-
+            debug()
             if existing_zoom_event:
                 function_call = eval("client.{0}.{1}".format(meeting_type, action))
                 result = function_call(user_id=user_id, id=existing_zoom_event.get("id"), **zoom_data)
@@ -476,8 +474,9 @@ if __name__=="__main__":
     #create_chair_zoom_accounts()
     #result = get_all_events()
     #license_users()
-    delete_all_main_poster_meetings()
+    #delete_all_main_poster_meetings()
     #create_climate_users()
+    get_all_events()
     sys.exit()
     parser = ArgumentParser()
     parser.add_argument("--clearAll", action="store_true", help="delete any existing webinars that start with AIWeb")
