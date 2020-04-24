@@ -60,8 +60,10 @@ for row in ws.iter_rows(min_row=2):
         if integration in ["Zoom", None]:
             result = create_or_update_zoom(data)
 
-            
+
             action = result.get("action")
+            if action == "skip":
+                continue
             zoomid = row[headers.index("zoomid")]
             zoomid.value = str(result.get("zoomid"))
 

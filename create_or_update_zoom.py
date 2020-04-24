@@ -312,6 +312,16 @@ def create_or_update_zoom(excel_data):
     typed them into Excel. If this function is imported into django/python, it should send timezone aware datetime
     objects. """
 
+    skip = str(excel_data.get("skip", excel_data.get("Skip", ""))).lower() in ['skip', "yes", "true"]
+    if skip:
+        return({"action":"skip"})
+
+    uniqueid = excel_data.get("uniqueid")
+    if not uniqueid:
+        print("the uniqueid field is required")
+        debug()
+        return({"action":error})
+
     from zsecrets import client, meeting_defaults, webinar_defaults
     #*********************************************************************
     #from zsecrets import climate_client as client #RMEMBER TO REMOVE THIS: Climate / Pryia
@@ -372,7 +382,7 @@ def create_or_update_zoom(excel_data):
 
 
         """Update an existing meeting if there is one noted in the excel spreadsheet"""
-        
+
         if meeting_type in ['meeting', "webinar"]:
             uniqueid = excel_data.get("uniqueid")
             existing_zoom_event = existing_zoom_events.get(uniqueid)
@@ -404,6 +414,11 @@ def create_or_update_zoom(excel_data):
             if not (199 < result.status_code < 299):
                 error_msg = eval("{0}_update_errors.get({1}, '___')".format(meeting_type, result.status_code))
                 print("An abnormal return code received when updating {0}. ".format(uniqueid, error_msg))
+                print(result.content)
+                return_val = json.loads(result.content)
+                return_val["action"] = "error"
+                debug()
+                return(return_val)
             print("{0} {1}".format(action, zoom_data.get("topic")))
 
             if action == "create":
@@ -432,9 +447,12 @@ def create_or_update_zoom(excel_data):
 
                 pheaders = ['name', 'email']
                 panelistStr = excel_data.get("panelists")  #comma separated list of emails Lee Campbell<lee@salk.edu>, Brad Brockmeyer<brockmeyer@salk.edu>
-                panelist_list = [parseaddr(item) for item in panelistStr.split(",")]
-                plist = [dict(zip(pheaders, item)) for item in panelist_list]
-                #zoom drops a panelist if the name is empty.   
+                if panelistStr == None:
+                    plist = []
+                else:
+                    panelist_list = [parseaddr(item) for item in panelistStr.split(",")]
+                    plist = [dict(zip(pheaders, item)) for item in panelist_list]
+                    #zoom drops a panelist if the name is empty.   
 
                 plist = [i if i.get("name") else {"name":'Name Unavailable', 'email':i.get("email")} for i in plist]
 
