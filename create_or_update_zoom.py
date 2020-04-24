@@ -494,13 +494,14 @@ if __name__=="__main__":
     #license_users()
     #delete_all_main_poster_meetings()
     #create_climate_users()
-    get_all_events()
-    sys.exit()
     parser = ArgumentParser()
     parser.add_argument("--clearAll", action="store_true", help="delete any existing webinars that start with AIWeb")
     parser.add_argument("--users", action="store_true")
     parser.add_argument("--meeting", action="store_true", help="create a meeting not a webinar")
+    parser.add_argument("--getAllEvents", action="store_true")
+
     
     ns = parser.parse_args()
 
-
+    if ns.getAllEvents:
+        get_all_events()
