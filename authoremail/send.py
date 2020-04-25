@@ -45,16 +45,16 @@ authors = Users.objects.filter(pk__in=Eventspeakers.objects.filter(event__type="
 all_papers = Events.objects.filter(session__conference__id=2020, type="Poster").order_by("uniqueid")
 
 
-final_schedule = excel2dict("/Users/lee/Dropbox/ICLR/2020 Addis Ababa/AcceptedPapers/final-updated2.xlsx")
+final_schedule = excel2dict("/Users/lee/Dropbox/ICLR/2020 Addis Ababa/zoom/newschedule/final-updated_unbal-no-2nd.xlsx")
 zoom_info = {}
-zoom_data_headers = ['uniqueid', "password", "timezone_choice", "host_zoom_user_email", "zoomid", "join_link", "start_link" ]
+zoom_data_headers = ['uniqueid', "password", "day", "timezone_choice", "host_zoom_user_email", "zoomid", "join_link", "start_link" ]
 os.chdir(cwd)
 
 template = Template(open("template.html", 'rb').read().decode("utf-8"))
 
 for row in final_schedule:
     uniqueid = row.get("uniqueid").replace("-2nd", "")
-    zoomdata = [uniqueid, row.get("password"), row.get("timezone_choice"), row.get("host_zoom_user_email"), row.get("zoomid"), row.get("join_link"), row.get("start_link") ]
+    zoomdata = [uniqueid, row.get("password"), row.get("day"), row.get("timezone_choice"), row.get("host_zoom_user_email"), row.get("zoomid"), row.get("join_link"), row.get("start_link") ]
     zoomdatadict = dict(zip(zoom_data_headers, zoomdata))
     zoom_info[uniqueid] = zoom_info.get(uniqueid, []) + [zoomdatadict]
 
@@ -63,7 +63,6 @@ for user in authors:
     papers = ess.filter(speaker=user)
     user.rocketchat_password = rocketchat_passwords[user.email]
     for es in papers:
-
         es.rocketchat_login = "https://iclr.rocket.chat/channel/{}".format(rocketchat_logins[es.event.uniqueid])
         
         es.zoominfo = zoom_info.get(es.event.uniqueid)
@@ -75,8 +74,9 @@ for user in authors:
 
 
     msg = Message(To=user.email)
-    msg.Subject = "ICLR 2020 Author Instructions"
+    msg.Subject = "ICLR 2020 Please check your poster session times, as they might have changed"
     msg.Html = html
+
     try:
         msg.snlSend()
     except exception as e:

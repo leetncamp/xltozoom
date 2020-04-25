@@ -9,72 +9,26 @@
 
 <body style="margin:10px !important">
 
+
+<p>Dear {{user.firstname}},</p>
+
+    <p>After several emails, we realized there was a small issue with the script to allocate papers to posters, and the
+    requested slots for a small number of papers was not incorporated. We have fixed the error and updated the
+    allocation, so that now all requested times are given. This does not affect the day you will present on, we kept
+    that fixed; it only affects the timezone. We did this in an effort to minimize disruptions to any plans you have
+    made to be available on the given day for your poster session. </p>
+
+    <p>For most of you, your poster session has not changed. For several of you, you will now be much happier since your
+    requested timezones are now respected. </p>
+
+    <p>Action item: We ask that everyone check the poster sessions for their papers, in case they have changed. </p>
+
+    <p>Thank you once again thank for your patience, and we look forward to seeing you all next week! </p>
+
+
+    <p>-- ICLR'20 Program Chairs</p>
+
     
-    <p>Dear {{user.firstname}},</p>
-
-    <p>We thank you for your patience. We have been working hard to schedule our first fully virtual ICLR over the past few
-    weeks, and we are finally ready to provide you with access and schedule information.</p>
-
-    <h3> 1. Web portal</h3>
-
-    <p>You will find all the information about the conference on <a
-        href="https://iclr.cc/virtual/index.html">https://iclr.cc/virtual/</a>. You should be <a
-        href="https://iclr.cc/Register/view-registration">registered</a> and logged in, in order to access the web portal.
-        As the author of a contributed paper at the conference, we would like to draw your attention to the following pages
-        in particular:</p> 
-
-    <ul>
-
-        <li>Schedule: <a href="https://iclr.cc/virtual/calendar.html">https://iclr.cc/virtual/calendar.html</a>&nbsp;this
-        page lists all the sessions of the conference.</li>
-
-        <li>Papers: <a href="https://iclr.cc/virtual/papers.html?filter=authors&search={{user.firstname}}+{{user.lastname}}">
-        https://iclr.cc/virtual/papers.html?filter=authors</a>
-        &nbsp;this page allows you to find your own papers. If you see any problem with your own paper(s) on this page, please report
-        to us at <a href="mailto:iclr2020-virtual@googlegroups.com">iclr2020-virtual@googlegroups.com</a>&nbsp;or at <a
-        href="https://iclr.rocket.chat/channel/helpdesk">#helpdesk</a>.</li>
-
-        <li>Help: <a href="https://iclr.cc/virtual/about.html">https://iclr.cc/virtual/about.html</a>&nbsp;this is where you
-        will find the answer to any question you may have during the conference and particularly during your own
-        presentation.</li>
-
-        <li>Please also take our quick author survey about the portal ... 
-            <a href="https://forms.gle/LxiKaj7Up8SnX95H6">https://forms.gle/LxiKaj7Up8SnX95H6</a> 
-            </li>
-
-    </ul>
-
-    <h3>2. Rocket.Chat</h2>
-
-    <p>We will use Rocket.Chat for asynchronous interaction between authors and participants. You were automatically
-        registered in the ICLR Rocket.Chat using <b>{{user.email}}</b>. Your RocketChat password has been set initialy
-        to <b>{{user.rocketchat_password}}</b> . Please go to
-        <a href="https://iclr.rocket.chat/">https://iclr.rocket.chat/</a>&nbsp;to reset your password and join the other
-        participants. </p>
-
-    <p>You can access the ICLR Rocket.Chat by either typing 
-        <a href="https://iclr.rocket.chat/">https://iclr.rocket.chat/</a>&nbsp;in your browser&rsquo;s address bar or by going to
-        Chat in the ICLR Web Portal (<a href="https://iclr.cc/virtual/chat.html">https://iclr.cc/virtual/chat.html </a>). We
-        have pre-populated the following channels dedicated to your papers:</p> 
-
-    <table class="table table-sm" border="1" style="border-collapse:collapse; border-style: solid;">
-        <tr> <th>Paper ID</th><th>Paper Title</th><th>Rocket.Chatchannel</th></tr>
-        {% for paper in papers %}
-            <tr><td>{{paper.event.uniqueid}}</td><td><a href="https://iclr.cc/virtual/poster_{{paper.event.uniqueid}}.html">{{paper.event.name }}</a></td><td><a href="{{paper.rocketchat_login}}">{{paper.rocketchat_login}}</a></td></tr>
-        {% endfor %}
-    </table>
-
-
-
-
-
-    <h3>3. Zoom</h3>
-
-    <p>We will use Zoom for you to interact with conference participants. Each paper of yours will be assigned a
-    dedicated Zoom meeting room, and we ask you to be present in the meeting room during the following slots which were
-    selected by yourself or chosen randomly if you did not participate in the preference survey earlier:</p>
-
-    <p>Your sessions:</p>
 
     <table class="table table-sm" border="1" style="border-collapse:collapse; border-style: solid;">
         <tr> <th>Paper ID</th><th>Title</th><th>Slot 1</th><th>Slot 2</th><th>Zoom Login</th></tr>
@@ -84,9 +38,10 @@
                 <td><a href="https://iclr.cc/virtual/poster_{{paper.event.uniqueid}}.html">{{paper.event.name}}</a></td>
                 {% for zoominfo in paper.zoominfo %}
                     <td>
-                        {{zoominfo.timezone_choice}} <br>
+                        {{zoominfo.day}}<br>{{zoominfo.timezone_choice}} <br>
                         <p><a href="{{zoominfo.join_link}}">Join Link</a></p>
                         <p><a href="{{zoominfo.start_link}}">Start Link</a></p>
+                        <p>zoom password: <b>{{zoominfo.password}}</b></p>
 
                     </td>
                 {% endfor %}
@@ -98,80 +53,9 @@
         {% endfor %}
     </table>
 
-    <h4>Instructions for using Zoom to present your poster</h4>
-    <ul>
-        <li>Update your Zoom client to the latest version.</li>
-    </ul>
-
-    <p>Starting the zoom meeting as host for your poster.</p>
-
-    <ul>
-
-        <li><a href="https://zoom.us/profile">Log out of zoom</a> in one of your browsers and login in using the
-        credentials supplied above. If your browser is already logged into a zoom account, you'll see your profile icon in the
-        upper right. Use that to log out. In that browser, log in using the username and password supplied above.  In that same browser click
-        the start link above.</li>
-
-        <li>Verify that you&rsquo;re in the correct zoom meeting room by clicking the (i) in the zoom toolbar (or at the top
-        left of the screen for attendees). You should see the title of your paper. </li>
-
-        <li>As host, you have the ability to start the meeting, kick people out (available in the participants list as
-        &lsquo;remove&rsquo;). You may designate someone else to be host and you may reclaim host. You may allow a
-        participant to share their screen, although we discourage this.</li>
-
-        <li>Your co-authors should join the meeting using the join_link rather than the start_link. If they also &ldquo;start&rdquo; the meeting and
-        you are already the host, you will be kicked out of the meeting. Only one person should start and host the meeting.
-        If someone needs to take over host duties, then the first host should make them host using the participants list
-        in-meeting. </li>
-
-    </ul>
-
-    <p>Ending the meeting</p>
-
-    <ul>
-
-        <li>When a host leaves the meeting, they have the option to End Meeting For All, or to Leave the Meeting. If the
-        host leaves the meeting while attendees are still in the meeting, one of the remaining attendees will assume the
-        role of host at random. We recommend having the host stay in the meeting until it finishes and then ending the
-        meeting for all. </li>
-
-    </ul>
-
-    <p>Other considerations </p>
-
-    <ul>
-
-        <li>All participants are expected to adhere to the <a href="https://iclr.cc/public/CodeOfConduct">code of
-        conduct</a>. If someone needs to be kicked from your meeting, use &ldquo;remove&rdquo; in the Participants List
-        under the &ldquo;more&hellip;&rdquo; button when you hover over their name. If you would like to report someone to
-        ICLR for misbehavior, the code of conduct has a section on reporting. </li>
-
-        <li>You may start this meeting before it's scheduled time to practice. You may also start the meeting again after
-        it's end date. Use the start instructions to start the meeting again.</li>
-
-        <li>We discourage recording of videos. We found that in some of our testing, recording the meeting reduced the
-        streaming quality. If you start recording, we advise mentioning that at the start of your presentation. Attendees
-        may tell if a zoom session is being recorded by the icon in the upper left of the zoom screen. Do not post such a
-        recording online without written consent from everyone who appeared or spoke in your recorded session. </li>
-
-        <li>SlidesLive is not live-streaming your poster zoom meeting. </li>
-
-    </ul>
-
-    <p>You are the host of the Zoom meeting room and have the highest level of privilege. Please do not share the Zoom
-    URL above with anyone other than your co-authors. Participants will receive a separate join URLs for each paper, one
-    for each presentation. </p>
-
-
-    <p>Please see the <a href="https://iclr.cc/virtual/about.html">FAQ</a>&nbsp;in the ICLR Web Portal for more info.</p>
-
+    <p>Your zoom session information:</p>
     
-    <p>Stay healthy, and we look forward to having you in our virtual ICLR&rsquo;20 next week!</p>
-
-    <p>-- ICLR&rsquo;20 Program Chairs</p>
-
-
-
+    
 </body>
 </html>
 

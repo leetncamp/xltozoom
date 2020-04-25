@@ -147,7 +147,9 @@ def get_existing_meetings(user_id=None, client=None):
         print("Total reported: {}".format(emresults.get("total_records")))
         existing_webinars = {item.get("agenda"): item for item in existing_webinar_list}
     else:
-        print(existing_webinars_result.content)
+        resultDict = json.loads(existing_webinars_result.content)
+        if not resultDict.get("message", "").startswith("Cannot use webinar API"):
+            print(existing_webinars_result.content)
         existing_webinars = {}
 
     existing_checked = True
@@ -320,12 +322,17 @@ def create_or_update_zoom(excel_data):
     if not uniqueid:
         print("the uniqueid field is required")
         debug()
-        return({"action":error})
+        return({"action":"error"})
 
     from zsecrets import client, meeting_defaults, webinar_defaults
     #*********************************************************************
     #from zsecrets import climate_client as client #RMEMBER TO REMOVE THIS: Climate / Pryia
     #from zsecrets import climate_user_id as user_id
+    #*********************************************************************
+
+    #*********************************************************************
+    from zsecrets import be_client as client #RMEMBER TO REMOVE THIS: Climate / Pryia
+    from zsecrets import be_user_id as user_id
     #*********************************************************************
 
     zoom_user_id = excel_data.get('host_zoom_user_email')  #An email address
@@ -403,7 +410,7 @@ def create_or_update_zoom(excel_data):
                 zoom_data['settings'].update({"alternative_hosts": alternative_hosts})
 
             zoom_data['recurrence'].update({"endtime": utc_endtime})
-            debug()
+
             if existing_zoom_event:
                 function_call = eval("client.{0}.{1}".format(meeting_type, action))
                 result = function_call(user_id=user_id, id=existing_zoom_event.get("id"), **zoom_data)
