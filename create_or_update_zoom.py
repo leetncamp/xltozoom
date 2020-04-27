@@ -331,8 +331,8 @@ def create_or_update_zoom(excel_data):
     #*********************************************************************
 
     #*********************************************************************
-    from zsecrets import be_client as client #RMEMBER TO REMOVE THIS: Climate / Pryia
-    from zsecrets import be_user_id as user_id
+    #from zsecrets import be_client as client #RMEMBER TO REMOVE THIS: Climate / Pryia
+    #from zsecrets import be_user_id as user_id
     #*********************************************************************
 
     zoom_user_id = excel_data.get('host_zoom_user_email')  #An email address
