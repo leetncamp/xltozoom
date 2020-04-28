@@ -410,7 +410,7 @@ def create_or_update_zoom(excel_data):
                 zoom_data['settings'].update({"alternative_hosts": alternative_hosts})
 
             zoom_data['recurrence'].update({"endtime": utc_endtime})
-
+            debug()
             if existing_zoom_event:
                 function_call = eval("client.{0}.{1}".format(meeting_type, action))
                 result = function_call(user_id=user_id, id=existing_zoom_event.get("id"), **zoom_data)
