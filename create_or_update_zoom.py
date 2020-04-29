@@ -166,6 +166,9 @@ def get_all_events():
         from zsecrets import client, user_id, meeting_defaults, webinar_defaults
     except ImportError:
         debug()
+
+    from zsecrets import social_client as client
+    from zsecrets import social_user_id as user_id
     meetings = json.loads(client.meeting.list(user_id=user_id, page_size=300).content).get("meetings")
     #    while meetings:
     #        print("Found {0}".format(len(meetings)))
