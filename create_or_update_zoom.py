@@ -451,6 +451,7 @@ def create_or_update_zoom(excel_data):
                 existing_zoom_events.update({return_val.get("agenda"): return_val})
 
             if meeting_type == "webinar":
+
                 existing_zoom_event = return_val  #I lookup the meeting ID from existing_zoom_event below.
 
                 """If this is a webinar, add the authors of the excel event as panelists"""
