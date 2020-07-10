@@ -59,12 +59,7 @@ for row in ws.iter_rows(min_row=2):
         integration = data.get("integration")
         if integration in ["Zoom", None]:
             result = create_or_update_zoom(data)
-<<<<<<< Updated upstream
 
-
-=======
-            
->>>>>>> Stashed changes
             action = result.get("action")
             if action == "skip":
                 continue
