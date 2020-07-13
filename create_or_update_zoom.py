@@ -8,7 +8,7 @@ from pdb import set_trace as debug
 import dateutil.parser
 import datetime
 import pytz
-from pdb import set_trace as debug
+stop = debug
 from argparse import ArgumentParser
 import copy
 from email.utils import parseaddr
@@ -154,10 +154,7 @@ def get_existing_meetings(user_id=None, client=None):
 
     existing_checked = True
     
-    try:
-        del existing_zoom_events[None]
-    except KeyError:
-        debug()
+    NONE = existing_zoom_events.pop(None, None)
     return(existing_meetings, existing_webinars)
 
 
@@ -328,15 +325,6 @@ def create_or_update_zoom(excel_data):
         return({"action":"error"})
 
     from zsecrets import client, meeting_defaults, webinar_defaults
-    #*********************************************************************
-    #from zsecrets import climate_client as client #RMEMBER TO REMOVE THIS: Climate / Pryia
-    #from zsecrets import climate_user_id as user_id
-    #*********************************************************************
-
-    #*********************************************************************
-    #from zsecrets import be_client as client #RMEMBER TO REMOVE THIS: Climate / Pryia
-    #from zsecrets import be_user_id as user_id
-    #*********************************************************************
 
     zoom_user_id = excel_data.get('host_zoom_user_email')  #An email address
     if zoom_user_id:
@@ -427,7 +415,7 @@ def create_or_update_zoom(excel_data):
                 print(result.content)
                 return_val = json.loads(result.content)
                 return_val["action"] = "error"
-                debug()
+                stop()
                 return(return_val)
             print("{0} {1}".format(action, zoom_data.get("topic")))
 
