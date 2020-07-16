@@ -49,7 +49,7 @@ meeting_defaults = {
 
 webinar_defaults = {
 
-    "type": 5,
+    "type": 6,
     "duration": "60",
     "recurrence": {
         "type": 1,
