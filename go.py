@@ -58,6 +58,10 @@ for row in ws.iter_rows(min_row=2):
         data = dict(zip(headers, [item.value for item in row]))
         integration = data.get("integration")
         if integration in ["Zoom", None]:
+            host_zoom_user_email = data.get("host_zoom_user_email")
+            print(host_zoom_user_email)
+            if not host_zoom_user_email:
+                print("Skipping row {} because host_zoom_user_email is empty".format(data))
             result = create_or_update_zoom(data)
 
             action = result.get("action")
