@@ -39,7 +39,7 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
 
-driver = webdriver.Firefox()
+
 zoompwd = os.getenv("ZOOMPWD")
 
 parser = ArgumentParser()
@@ -66,14 +66,15 @@ for eml in emls:
     links = soup.findAll("a")
     login_email = soup.find("table").find("table").find("table").findAll("td")[0].text.strip().replace("Hello ", "").strip(",")
     print(login_email)
-    
+
     #Exclude links that aren't activation links
-    links = [link['href'] for link in links if link['href'].startswith("https://zoom.us.activate")]
+    links = [link['href'] for link in links if link['href'].startswith("https://zoom.us/activate")]
     #There may be more than one activation link; get only the first one. 
+
     if links:
         link = links[0]
         driver = webdriver.Firefox()
-        driver.get(link['href'])
+        driver.get(link)
         try:
             login = driver.find_element_by_link_text("Sign Up with a Password")
         except NoSuchElementException:
