@@ -273,6 +273,7 @@ def create_or_update_zoom(excel_data):
 
     #existing_webinars and existing_meetings for this user
     existing_meetings, existing_webinars = get_existing_meetings(user_id=zoom_user_id, client=client)
+
     existing_meetings.update(existing_webinars)
     existing_zoom_events = existing_meetings
 
@@ -319,7 +320,7 @@ def create_or_update_zoom(excel_data):
         """Update an existing meeting if there is one noted in the excel spreadsheet"""
 
         if meeting_type in ['meeting', "webinar"]:
-            uniqueid = excel_data.get("uniqueid")
+            uniqueid = str(excel_data.get("uniqueid"))
             existing_zoom_event = existing_zoom_events.get(uniqueid)
             if action == "delete":
                 if existing_zoom_event:
@@ -345,8 +346,10 @@ def create_or_update_zoom(excel_data):
                 "agenda": str(uniqueid),
                 "topic": excel_data.get("title"),
                 "start_time": utc_starttime,
+                "duration": int(((endtime - starttime).seconds) / 60),
                 "password": excel_data.get("password"),
                 })
+
             alternative_hosts = excel_data.get("alternative_hosts")
             if alternative_hosts:
                 zoom_data['settings'].update({"alternative_hosts": alternative_hosts})
