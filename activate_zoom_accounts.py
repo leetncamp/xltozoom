@@ -18,10 +18,16 @@ MacOS includes a selenium driver and works without much fuss.  To use this scrip
 1. Select, then drag and drop all zoom activation emails from Apple Mail to a folder.  This will produce one .eml file
    per zoom activation email.
 
-2. Pass that folder location as a parameter to this script.
+2. Pass that folder location as a parameter to this script. An optional 2nd parameter is the schedule.xlsx file from
+   xlttozoom. If this file contains zoom_host_password  host_zoom_user_email and type fields, then these will be used
+   rather than the hard coded defaults for the account password. The event type will used as the last name. 
 
 The script will open each email, find the activation link url, open it in a browser, and set the password to the value
 defined in teh zoompwd variable below.
+
+Example:
+
+./activate_zoom_accounts.py ~/Desktop/zoom_activation_emls_folder xltozoom/schedule.xlsx
 
 """
 
@@ -38,15 +44,15 @@ from bs4 import BeautifulSoup as bs
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
-
+from openpyxl import load_workbook
 
 zoompwd = os.getenv("ZOOMPWD")
 
 parser = ArgumentParser()
-parser.add_argument("file", help="supply folder to collection of acount activation .eml (emails dragged from Apple mail) files from zoom")
+parser.add_argument("file", nargs="*", help="supply path to folder to collection of account activation .eml (emails dragged from Apple mail) files from zoom as first param. The 2nd param should be the scheudle xlsx that has zoom_host_password, host_zoom_user_email and type.")
 ns = parser.parse_args()
 
-emls = glob.glob(ns.file + "/*.eml")
+emls = glob.glob(ns.file[0] + "/*.eml")
 email_parser = BytesParser
 
 
@@ -56,7 +62,38 @@ def viewhtml(html):
     os.system("open /tmp/delme.html")
 
 
+data = {}
 
+if len(ns.file) > 1:
+    schedulexlsx = ns.file[1]
+
+    wb = load_workbook(schedulexlsx)
+    ws = wb.active
+    
+    headers = [i.value for i in ws[1] if i.value]
+
+    for row in ws.iter_rows(min_row=2):
+
+        row_data = dict(zip(headers, [i.value for i in row]))
+
+        host_zoom_user_email = row_data.get("host_zoom_user_email")
+        row_type = row_data.get("type")
+        zoom_host_password =  row_data.get("zoom_host_password")
+    
+        if zoom_host_password and row_type and host_zoom_user_email:
+            data[host_zoom_user_email] = {
+                "zoom_host_password": zoom_host_password,
+                "type": row_type,
+                }
+        else:
+            print("skipping row {}".format(row_data))
+
+
+
+default_password = "FernCube31"
+default_type = "Poster"
+
+schedule_data = data
 
 for eml in emls:
     fp = open(eml,'rb')
@@ -66,6 +103,11 @@ for eml in emls:
     links = soup.findAll("a")
     login_email = soup.find("table").find("table").find("table").findAll("td")[0].text.strip().replace("Hello ", "").strip(",")
     print(login_email)
+    schedulexlsx_info = schedule_data.get(login_email, {})
+
+    Password = schedulexlsx_info.get("zoom_host_password", default_password)
+    Lastname = schedulexlsx_info.get("type", default_type)
+
 
     #Exclude links that aren't activation links
     links = [link['href'] for link in links if link['href'].startswith("https://zoom.us/activate")]
@@ -86,15 +128,16 @@ for eml in emls:
         firstname = driver.find_element_by_id("firstName")
         firstname.send_keys("NeurIPS 2020")
         lastname = driver.find_element_by_id("lastName")
-        lastname.send_keys("Poster")
+        lastname.send_keys(Lastname)
         password = driver.find_element_by_id("password")
-        password.send_keys("FernCube31")
+        password.send_keys(Password)
         cpassword = driver.find_element_by_id("confirm_password")
-        cpassword.send_keys("FernCube31")
+        cpassword.send_keys(Password)
         Continue = driver.find_element_by_link_text("Continue")
         Continue.click()
         driver.close()
         print("Activated {}".format(login_email))
+
         continue
 
 

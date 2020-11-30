@@ -1,3 +1,4 @@
 zsecrets.py
 *.xlsx
 ~$*
+geckodriver.log
