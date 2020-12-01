@@ -123,7 +123,7 @@ for eml in emls:
             print("{} has already been processed. Press c [enter] to continue".format(login_email))
             driver.close()
             continue
-
+        print("Activating {} with {} and lastname of {}".format(login_email, Password, Lastname))
         login.click()
         firstname = driver.find_element_by_id("firstName")
         firstname.send_keys("NeurIPS 2020")
