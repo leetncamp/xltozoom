@@ -96,6 +96,7 @@ default_type = "Poster"
 schedule_data = data
 
 for eml in emls:
+
     fp = open(eml,'rb')
     msg = BytesParser().parse(fp)
     html = msg.get_payload(decode=True).decode("UTF-8")
@@ -110,7 +111,7 @@ for eml in emls:
 
 
     #Exclude links that aren't activation links
-    links = [link['href'] for link in links if link['href'].startswith("https://zoom.us/activate")]
+    links = [link['href'] for link in links if "zoom.us/activate" in link['href']]
     #There may be more than one activation link; get only the first one. 
 
     if links:
