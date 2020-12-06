@@ -17,6 +17,8 @@ user_id = user_result.get('id')
 
 graphical_warning = False
 
+#Consider allowing participants to start wtihout a host for meetings. That would spare the poster presenter from having to know the start link. 
+
 
 meeting_defaults = {
     "type": 5,
