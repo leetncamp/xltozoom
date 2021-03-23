@@ -15,6 +15,7 @@ https://selenium-python.readthedocs.io/getting-started.html
 This script is set up to use the Gecko Driver and Firefox, but can be easily modified to use another browser.  Safari on
 MacOS includes a selenium driver and works without much fuss.  To use this script:
 
+0. Set the meeting name below
 1. Select, then drag and drop all zoom activation emails from Apple Mail to a folder.  This will produce one .eml file
    per zoom activation email.
 
@@ -31,6 +32,7 @@ Example:
 
 """
 
+meeting_name = "MLSys 2021"
 
 import os
 import sys
@@ -127,7 +129,7 @@ for eml in emls:
         print("Activating {} with {} and lastname of {}".format(login_email, Password, Lastname))
         login.click()
         firstname = driver.find_element_by_id("firstName")
-        firstname.send_keys("NeurIPS 2020")
+        firstname.send_keys(meeting_name)
         lastname = driver.find_element_by_id("lastName")
         lastname.send_keys(Lastname)
         password = driver.find_element_by_id("password")
