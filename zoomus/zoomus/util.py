@@ -265,5 +265,8 @@ def generate_jwt(key, secret):
     payload = {"iss": key, "exp": int(time.time() + 3600)}
 
     token = jwt.encode(payload, secret, algorithm="HS256", headers=header)
-    
-    return token.decode("utf-8")
+    try:
+        # this used to return a utf-8 string but now seems to return unicode. Handle either.
+        return token.decode("utf-8")
+    except AttributeError:
+        return token
