@@ -92,8 +92,8 @@ if len(ns.file) > 1:
 
 
 
-default_password = "FernCube31"
-default_type = "Poster"
+default_password = "CubeVis31"
+default_type = "Talk"
 
 schedule_data = data
 
