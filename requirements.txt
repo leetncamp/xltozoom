@@ -61,7 +61,7 @@ jmespath==0.10.0
 jsonfield==3.1.0
 jwcrypto==0.8
 kombu==5.0.2
-lxml==4.6.2
+lxml==4.6.3
 Markdown==3.3.4
 markdown2==2.4.0
 markdownify==0.6.5
