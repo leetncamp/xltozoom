@@ -258,7 +258,7 @@ def create_or_update_zoom(excel_data):
     if not uniqueid:
         print("the uniqueid field is required")
         debug()
-        return({"action":"error"})
+        return {"action": "error"}
 
     from zsecrets import client, meeting_defaults, webinar_defaults
     zoom_user_id = excel_data.get('host_zoom_user_email')  #An email address
@@ -435,8 +435,7 @@ def create_or_update_zoom(excel_data):
 
 
     else:
-        return({"action":"skipped"}) #Which of these is better?
-        return({"action": "skipped due to no start or no end time: {}".format(excel_data.get("title"))})
+        return {"action": "skipped ... no start or no end time: {}?".format(excel_data.get("title"))}
 
 
 
@@ -461,3 +460,4 @@ if __name__=="__main__":
     #
     #if ns.clearAll:
     #    clearAll()
+
