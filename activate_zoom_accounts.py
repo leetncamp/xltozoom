@@ -33,6 +33,7 @@ Example:
 """
 
 meeting_name = "MLSys 2021"
+input(f"Using {meeting_name}: ")
 
 import os
 import sys
