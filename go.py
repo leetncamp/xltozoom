@@ -33,9 +33,9 @@ headers = [item.value for item in ws[1]]
 
 
 def excel_is_open():
-    return(True)
+    return True
     excel = [item.name() for item in psutil.process_iter() if "excel" in item.name().lower()]
-    return (bool(excel))
+    return bool(excel)
 
 
 def save_excel(msg):
