@@ -115,6 +115,7 @@ for eml in emls:
             login = driver.find_element_by_link_text("Sign Up with a Password")
         except NoSuchElementException:
             print("{} has already been processed. Press c [enter] to continue".format(login_email))
+            os.rename(eml, eml.replace(".eml", ".txt"))
             driver.close()
             continue
         print("Activating {} with {} and lastname of {}".format(login_email, Password, Lastname))
