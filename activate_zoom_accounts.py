@@ -32,32 +32,29 @@ Example:
 
 """
 
-meeting_name = "MLSys 2021"
+meeting_name = "ICLR 2021"
 input(f"Using {meeting_name}: ")
 
 import os
-import sys
+
 from pdb import set_trace as debug
 stop = debug
 import glob
 from argparse import ArgumentParser
 from email.parser import BytesParser
-import email
 from bs4 import BeautifulSoup as bs
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
 from openpyxl import load_workbook
 
 zoompwd = os.getenv("ZOOMPWD")
 
 parser = ArgumentParser()
-parser.add_argument("file", nargs="*", help="supply path to folder to collection of account activation .eml (emails dragged from Apple mail) files from zoom as first param. The 2nd param should be the scheudle xlsx that has zoom_host_password, host_zoom_user_email and type.")
+parser.add_argument("file", nargs="*", help="supply path to folder to collection of account activation .eml (emails dragged from Apple mail) files from zoom as first param. The 2nd param should be the schedule xlsx that has zoom_host_password, host_zoom_user_email and type.")
 ns = parser.parse_args()
 
 emls = glob.glob(ns.file[0] + "/*.eml")
 email_parser = BytesParser
-
 
 
 def viewhtml(html):
@@ -69,19 +66,16 @@ data = {}
 
 if len(ns.file) > 1:
     schedulexlsx = ns.file[1]
-
     wb = load_workbook(schedulexlsx)
     ws = wb.active
-    
     headers = [i.value for i in ws[1] if i.value]
 
     for row in ws.iter_rows(min_row=2):
 
         row_data = dict(zip(headers, [i.value for i in row]))
-
         host_zoom_user_email = row_data.get("host_zoom_user_email")
         row_type = row_data.get("type")
-        zoom_host_password =  row_data.get("zoom_host_password")
+        zoom_host_password = row_data.get("zoom_host_password")
     
         if zoom_host_password and row_type and host_zoom_user_email:
             data[host_zoom_user_email] = {
@@ -91,16 +85,13 @@ if len(ns.file) > 1:
         else:
             print("skipping row {}".format(row_data))
 
-
-
 default_password = "CubeVis31"
 default_type = "Talk"
 
 schedule_data = data
 
 for eml in emls:
-
-    fp = open(eml,'rb')
+    fp = open(eml, 'rb')
     msg = BytesParser().parse(fp)
     html = msg.get_payload(decode=True).decode("UTF-8")
     soup = bs(html, features="lxml")
@@ -112,10 +103,9 @@ for eml in emls:
     Password = schedulexlsx_info.get("zoom_host_password", default_password)
     Lastname = schedulexlsx_info.get("type", default_type)
 
-
-    #Exclude links that aren't activation links
+    # Exclude links that aren't activation links
     links = [link['href'] for link in links if "zoom.us/activate" in link['href']]
-    #There may be more than one activation link; get only the first one. 
+    # There may be more than one activation link; get only the first one.
 
     if links:
         link = links[0]
@@ -141,10 +131,4 @@ for eml in emls:
         Continue.click()
         driver.close()
         print("Activated {}".format(login_email))
-
         continue
-
-
-
-
-
