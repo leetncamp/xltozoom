@@ -3,14 +3,15 @@
 
 """
 
-This script requires MacOS and Apple Mail to work without modification.  When creating one zoom account per person, you
-will need to create 2000 accounts (NeurIPS) and manually activate them.   This script helps automate that will selenium
+This script requires MacOS and Apple Mail to work without modification.  When creating one zoom account per poster, you
+will need to create 2000 accounts (NeurIPS) and manually activate them.   This script helps automate that with selenium
 driver.
 
 pip install selenium
 
 There are more installation steps required as documented here:
 https://selenium-python.readthedocs.io/getting-started.html
+On MacOs, the driver will not be signed and you'll need to  xattr -d com.apple.quarantine chromedriver
 
 This script is set up to use the Gecko Driver and Firefox, but can be easily modified to use another browser.  Safari on
 MacOS includes a selenium driver and works without much fuss.  To use this script:
@@ -46,6 +47,7 @@ from bs4 import BeautifulSoup as bs
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from openpyxl import load_workbook
+from msedge.selenium_tools import Edge, EdgeOptions
 
 zoompwd = os.getenv("ZOOMPWD")
 
@@ -109,13 +111,18 @@ for eml in emls:
 
     if links:
         link = links[0]
-        driver = webdriver.Firefox()
+        #driver = webdriver.Firefox()
+        driver = webdriver.Chrome()
+        #options = EdgeOptions()
+        #options.use_chromium = True
+        #driver = Edge(options=options)
         driver.get(link)
         try:
             login = driver.find_element_by_link_text("Sign Up with a Password")
         except NoSuchElementException:
             print("{} has already been processed. Press c [enter] to continue".format(login_email))
             os.rename(eml, eml.replace(".eml", ".txt"))
+
             driver.close()
             continue
         print("Activating {} with {} and lastname of {}".format(login_email, Password, Lastname))
