@@ -125,7 +125,7 @@ tld==0.10
 tqdm==4.59.0
 Unidecode==1.2.0
 uritemplate==3.0.1
-urllib3==1.26.4
+urllib3==1.26.5
 vine==5.0.0
 vobject==0.9.6.1
 wcwidth==0.2.5
