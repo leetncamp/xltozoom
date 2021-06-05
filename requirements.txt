@@ -23,7 +23,7 @@ cryptography==3.4.6
 cssselect2==0.4.1
 defusedxml==0.7.1
 Deprecated==1.2.12
-Django==3.1.7
+Django==3.1.9
 django-cal==0.3.0
 django-colorfield==0.4.1
 django-cors-headers==3.7.0
