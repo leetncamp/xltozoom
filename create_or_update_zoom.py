@@ -399,15 +399,15 @@ def create_or_update_zoom(excel_data):
                 """If this is a webinar, add the authors of the excel event as panelists"""
 
                 pheaders = ['name', 'email']
-                panelistStr = excel_data.get("panelists")  #comma separated list of emails Lee Campbell<lee@salk.edu>, Brad Brockmeyer<brockmeyer@salk.edu>
-                if panelistStr == None:
+                panelistStr = excel_data.get("panelists")  # comma separated list of emails Lee Campbell<lee@eventhosts.cc>, Brad Brockmeyer<brad@eventhosts.cc>
+                if panelistStr is None:
                     plist = []
                 else:
                     panelist_list = [parseaddr(item) for item in panelistStr.split(",")]
                     plist = [dict(zip(pheaders, item)) for item in panelist_list]
                     #zoom drops a panelist if the name is empty.   
 
-                plist = [i if i.get("name") else {"name":'Name Unavailable', 'email':i.get("email")} for i in plist]
+                plist = [i if i.get("name") else {"name": 'Name Unavailable', 'email': i.get("email")} for i in plist]
 
                 panelist_emails = [item.get("email") for item in plist]
 
