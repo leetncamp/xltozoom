@@ -72,7 +72,7 @@ for row in ws.iter_rows(min_row=2):
 
             join_link = result.get("join_url")
 
-            """Update the join link each time becuase the link can change if you change the attributes of the meeting"""
+            """Update the join link each time because the link can change if you change the attributes of the meeting"""
             
             if join_link:
                 join_link_cell = row[headers.index("join_link")]

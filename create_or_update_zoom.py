@@ -251,7 +251,7 @@ def create_or_update_zoom(excel_data):
 
 
     if action == "skip":
-        return({"action":"skip"})
+        return {"action": "skip"}
 
 
     uniqueid = excel_data.get("uniqueid")
@@ -261,7 +261,7 @@ def create_or_update_zoom(excel_data):
         return {"action": "error"}
 
     from zsecrets import client, meeting_defaults, webinar_defaults
-    zoom_user_id = excel_data.get('host_zoom_user_email')  #An email address
+    zoom_user_id = excel_data.get('host_zoom_user_email')  # An email address
     if zoom_user_id:
         user_result = json.loads(client.user.get(id=zoom_user_id).content)
         user_id = user_result.get('id')
@@ -290,11 +290,11 @@ def create_or_update_zoom(excel_data):
             endtime = datetime.datetime.strptime(endtime, "%Y-%m-%dT%H:%M:00Z")
 
         elif type(starttime) == datetime.datetime:
-            if starttime.tzinfo == None:
+            if starttime.tzinfo is None:
 
-                """Excel has no concept of timezones. The timezone is in a column with header 'timezone'.
-                If a timezone is found in the datetime.datetime, then honor it. Otherwise, looking for a 
-                'timezone' key in the dictionary"""
+                """Excel has no concept of timezones. The timezone is in a column with header 'timezone'. If a 
+                timezone is found in the datetime.datetime, then honor it. Otherwise, looking for a 'timezone' key in 
+                the dictionary """
                 try:
      
                     timezone_name = excel_data.get("timezone")
@@ -303,7 +303,7 @@ def create_or_update_zoom(excel_data):
                     TZ = pytz.timezone(timezone_name)
                 except:
                     debug()
-                starttime += roundingerror  #Somemtimes we get a rounding error from Excel. Round to nearest.
+                starttime += roundingerror  # Somemtimes we get a rounding error from Excel. Round to nearest.
                 starttime = starttime.replace(microsecond=0)
                 endtime += roundingerror  
                 endtime = endtime.replace(microsecond=0)
@@ -333,8 +333,8 @@ def create_or_update_zoom(excel_data):
                         print("Deleted {}".format(existing_zoom_event.get('id')))
                         return({"action":"Deleted"})
                     else:
-                        return({"action":"Error: unable to delete"})
-                return({"action":"No Event to delete"})
+                        return {"action": "Error: unable to delete"}
+                return {"action": "No Event to delete"}
 
             action = "update" if existing_zoom_event else "create"
             """"Create or update a new meeting or webinar"""
@@ -346,7 +346,7 @@ def create_or_update_zoom(excel_data):
                 "agenda": str(uniqueid),
                 "topic": excel_data.get("title"),
                 "start_time": utc_starttime,
-                "duration": int(((endtime - starttime).seconds) / 60),
+                "duration": int((endtime - starttime).seconds / 60),
                 "password": excel_data.get("password"),
                 })
 
@@ -429,9 +429,9 @@ def create_or_update_zoom(excel_data):
 
             else:
                 pass  # we need to add alternative hosts here if possible. 
-            return(return_val)
+            return return_val
         else:
-            return({"action": "skipped due to incorrect meeting type in meeting_or_webinar: {}".format(excel_data.get("title"))})
+            return {"action": "skipped due to incorrect meeting type in meeting_or_webinar: {}".format(excel_data.get("title"))}
 
 
     else:
