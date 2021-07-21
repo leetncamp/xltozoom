@@ -7,9 +7,9 @@ import json
 
 
 
-client = ZoomClient("xxxxxxxxxxxxxxxxxxxxxxx", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx") #(API_KEY, API_SECRET)
+client = ZoomClient("xxxxxxxxxxxxxxxxxxxxxxx", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")  # (API_KEY, API_SECRET)
 
-user_result = json.loads(client.user.get(id='xxxx@example.com').content) #The email address used to generate the keys
+user_result = json.loads(client.user.get(id='xxxx@example.com').content) # The email address used to generate the keys
 
 user_id = user_result.get('id')
 
@@ -17,7 +17,7 @@ user_id = user_result.get('id')
 
 graphical_warning = False
 
-#Consider allowing participants to start wtihout a host for meetings. That would spare the poster presenter from having to know the start link. 
+#Consider allowing participants to start without a host for meetings. That would spare the poster presenter from having to know the start link.
 
 
 meeting_defaults = {
@@ -38,7 +38,8 @@ meeting_defaults = {
       "enforce_login_domains": "",
       "global_dial_in_countries": [],
       "host_video": "false",
-      "join_before_host": "false",
+      "join_before_host": "true",
+      "jbh_time": 0,
       "mute_upon_entry": "true",
       "participant_video": "false",
       "registrants_email_notification": "false",
