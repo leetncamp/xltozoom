@@ -41,7 +41,7 @@ def excel_is_open():
 def save_excel(msg):
     if excel_is_open():
         if graphical_warning:
-            from tkinter import messagebox, Tk
+            from tkinter import messagebox
             import tkinter
             window = tkinter.Tk()
             window.wm_withdraw()
@@ -72,7 +72,8 @@ for row in ws.iter_rows(min_row=2):
 
             join_link = result.get("join_url")
 
-            """Update the join link each time because the link can change if you change the attributes of the meeting"""
+            """Update the join link each time because the link can change if you change the attributes of the meeting 
+            """
             
             if join_link:
                 join_link_cell = row[headers.index("join_link")]
@@ -81,7 +82,7 @@ for row in ws.iter_rows(min_row=2):
             start_link = result.get("start_url")
 
 
-            """Update the join link each time becuase the link can change if you change the attributes of the meeting"""
+            """Update the join link each time because the link can change if you change the attributes of the meeting"""
             
             if start_link:
                 start_link_cell = row[headers.index("start_link")]
@@ -93,7 +94,9 @@ for row in ws.iter_rows(min_row=2):
     except:
         tb = traceback.format_exc()
         if dirty:
-            save_excel("Warning, An exception occurred. However, before that exception occurred, the file, {},  was modifed by this script with updated information about zoom meetings. Please close the file in Excel without saving if it is open. \n\n{}".format(excelpath, tb))
+            save_excel("Warning, An exception occurred. However, before that exception occurred, "
+                       "the file, {},  was modified by this script with updated information about zoom meetings. "
+                       "Please close the file in Excel without saving if it is open. \n\n{}".format(excelpath, tb))
         else:
             save_excel("Warning, An exception occurred.  \n\n{}".format(tb))
 
