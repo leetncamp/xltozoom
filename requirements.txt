@@ -188,7 +188,7 @@ sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.5
 SpoofMAC==2.1.1
-sqlparse==0.4.1
+sqlparse==0.4.2
 tablib[pandas]==3.0.0
 tenacity==8.0.1
 terminado==0.10.1
