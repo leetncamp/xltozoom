@@ -2,3 +2,4 @@ zsecrets.py
 *.xlsx
 ~$*
 geckodriver.log
+oidc.key

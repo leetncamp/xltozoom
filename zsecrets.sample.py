@@ -21,7 +21,8 @@ graphical_warning = False
 
 
 meeting_defaults = {
-    "type": 5,
+    "type": 8,
+    "pre_schedule": "false",
     "recurrence": {
       "type": 1,
       "repeat_interval": 1,

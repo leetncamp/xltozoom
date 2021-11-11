@@ -115,10 +115,10 @@ existing_checked = False
 def get_existing_meetings(user_id=None, client=None):
 
     """leave two variables in the global namespace of this file: existing_zoom_events and existing_checked. Look up
-    existing events here rather than hitting the API for each event.  existing_checked indicates whether existing_zoom_evnets
-    has already been loaded.  user_id is an email address or zoom alphanumeric id."""
+    existing events here rather than hitting the API for each event.  existing_checked indicates whether
+    existing_zoom_events has already been loaded.  user_id is an email address or zoom alphanumeric id. """
 
-    """TODO re-write this to avoid using globals.  No need for that in the currrent design where each presenter gets
+    """TODO re-write this to avoid using globals.  No need for that in the current design where each presenter gets
     their own license"""
 
     try:
@@ -131,7 +131,7 @@ def get_existing_meetings(user_id=None, client=None):
             user_id = user_result.get('id')
         else:
             print("Defaulting to user_id in zsecrets")
-            from zsecrets import user_id  #use the user_id in zsecrets 
+            from zsecrets import user_id  # use the user_id in zsecrets
 
 
         existing_meetings_result = client.meeting.list(user_id=user_id, page_size=300)
@@ -162,6 +162,8 @@ def get_existing_meetings(user_id=None, client=None):
     except Exception as e:
         print(traceback.format_exc())
         debug()
+        existing_meetings = []
+        existing_webinars = []
     return(existing_meetings, existing_webinars)
 
 
@@ -272,6 +274,8 @@ def create_or_update_zoom(excel_data):
             debug()
 
     #existing_webinars and existing_meetings for this user
+    if not zoom_user_id:
+        debug()
     existing_meetings, existing_webinars = get_existing_meetings(user_id=zoom_user_id, client=client)
 
     existing_meetings.update(existing_webinars)
@@ -331,7 +335,7 @@ def create_or_update_zoom(excel_data):
                         debug()
                     if result.ok:
                         print("Deleted {}".format(existing_zoom_event.get('id')))
-                        return({"action":"Deleted"})
+                        return {"action": "Deleted"}
                     else:
                         return {"action": "Error: unable to delete"}
                 return {"action": "No Event to delete"}
@@ -370,7 +374,7 @@ def create_or_update_zoom(excel_data):
                 return_val = json.loads(result.content)
                 return_val["action"] = "error"
                 stop()
-                return(return_val)
+                return return_val
             print("{0} {1}".format(action, zoom_data.get("topic")))
 
             if action == "create":
@@ -394,7 +398,7 @@ def create_or_update_zoom(excel_data):
 
             if meeting_type == "webinar":
 
-                existing_zoom_event = return_val  #I lookup the meeting ID from existing_zoom_event below.
+                existing_zoom_event = return_val  # I lookup the meeting ID from existing_zoom_event below.
 
                 """If this is a webinar, add the authors of the excel event as panelists"""
 
@@ -417,7 +421,7 @@ def create_or_update_zoom(excel_data):
 
                 result = client.webinar.add_panelists(user_id=user_id, id=existing_zoom_event.get('id'), **panelist_data)
                 if not result.ok:
-                    print(json.loads(response.content))
+                    print(json.loads(result.content))
                 """Remove panelists that are not listed in the source (excel) data"""
                 result = client.webinar.list_panelists(user_id=user_id, id=existing_zoom_event.get("id"))
                 if result.ok:
