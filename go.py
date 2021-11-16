@@ -58,35 +58,35 @@ for row in ws.iter_rows(min_row=2):
         data = dict(zip(headers, [item.value for item in row]))
         integration = data.get("integration")
         if integration in ["Zoom", None]:
-            host_zoom_user_email = data.get("host_zoom_user_email")
-            print(host_zoom_user_email)
-            if not host_zoom_user_email:
-                print("Skipping row {} because host_zoom_user_email is empty".format(data))
+            zoom_username = data.get("zoom_username")
+            print(zoom_username)
+            if not zoom_username:
+                print("Skipping row {} because zoom_username is empty".format(data))
             result = create_or_update_zoom(data)
 
             action = result.get("action")
             if action == "skip":
                 continue
-            zoomid = row[headers.index("zoomid")]
-            zoomid.value = str(result.get("zoomid"))
+            zoom_id = row[headers.index("zoom_id")]
+            zoom_id.value = str(result.get("zoom_id"))
 
-            join_link = result.get("join_url")
+            zoom_join_link = result.get("join_url")
 
             """Update the join link each time because the link can change if you change the attributes of the meeting 
             """
             
-            if join_link:
-                join_link_cell = row[headers.index("join_link")]
-                join_link_cell.value = join_link
+            if zoom_join_link:
+                join_link_cell = row[headers.index("zoom_join_link")]
+                join_link_cell.value = zoom_join_link
 
-            start_link = result.get("start_url")
+            zoom_start_link = result.get("start_url")
 
 
             """Update the join link each time because the link can change if you change the attributes of the meeting"""
             
-            if start_link:
-                start_link_cell = row[headers.index("start_link")]
-                start_link_cell.value = start_link
+            if zoom_start_link:
+                start_link_cell = row[headers.index("zoom_start_link")]
+                start_link_cell.value = zoom_start_link
 
             if not dirty:
                 dirty = True

@@ -122,7 +122,6 @@ def get_existing_meetings(user_id=None, client=None):
     their own license"""
 
     try:
-
         if not client:
             from zsecrets import client
 
@@ -263,7 +262,7 @@ def create_or_update_zoom(excel_data):
         return {"action": "error"}
 
     from zsecrets import client, meeting_defaults, webinar_defaults
-    zoom_user_id = excel_data.get('host_zoom_user_email')  # An email address
+    zoom_user_id = excel_data.get('zoom_username')  # An email address
     if zoom_user_id:
         user_result = json.loads(client.user.get(id=zoom_user_id).content)
         user_id = user_result.get('id')
@@ -290,8 +289,12 @@ def create_or_update_zoom(excel_data):
     #Starttime and endtime are required in the spreadsheet even though it's possible to schedule a recurring webinar without them.
     if starttime and endtime:
         if type(starttime) == str:
-            starttime = datetime.datetime.strptime(starttime, "%Y-%m-%dT%H:%M:00Z")
-            endtime = datetime.datetime.strptime(endtime, "%Y-%m-%dT%H:%M:00Z")
+            if not starttime.endswith("Z"):
+                starttime = starttime + "Z"
+            if not endtime.endswith("Z"):
+                endtime = endtime + "Z"
+            starttime = UTC.localize(datetime.datetime.strptime(starttime, "%Y-%m-%d %H:%M:00Z"))
+            endtime = UTC.localize(datetime.datetime.strptime(endtime, "%Y-%m-%d %H:%M:00Z"))
 
         elif type(starttime) == datetime.datetime:
             if starttime.tzinfo is None:
@@ -302,12 +305,12 @@ def create_or_update_zoom(excel_data):
                 try:
      
                     timezone_name = excel_data.get("timezone")
-                    if not timezone_name or timezone_name=="None":
+                    if not timezone_name or timezone_name == "None":
                         timezone_name = "UTC"
                     TZ = pytz.timezone(timezone_name)
                 except:
                     debug()
-                starttime += roundingerror  # Somemtimes we get a rounding error from Excel. Round to nearest.
+                starttime += roundingerror  # Sometimes we get a rounding error from Excel. Round to nearest.
                 starttime = starttime.replace(microsecond=0)
                 endtime += roundingerror  
                 endtime = endtime.replace(microsecond=0)
@@ -342,16 +345,14 @@ def create_or_update_zoom(excel_data):
 
             action = "update" if existing_zoom_event else "create"
             """"Create or update a new meeting or webinar"""
-            zoom_data = copy.copy(eval("{0}_defaults".format(meeting_type)))
-
             """Load the defaults definition"""
             zoom_data = copy.copy(eval("{0}_defaults".format(meeting_type)))
             zoom_data.update({
                 "agenda": str(uniqueid),
-                "topic": excel_data.get("title"),
+                "topic": excel_data.get("name"),
                 "start_time": utc_starttime,
                 "duration": int((endtime - starttime).seconds / 60),
-                "password": excel_data.get("password"),
+                "password": excel_data.get("zoom_meeting_password"),
                 })
 
             alternative_hosts = excel_data.get("alternative_hosts")
@@ -387,7 +388,7 @@ def create_or_update_zoom(excel_data):
             #print(return_val.get("start_url"))
             #print()
             #print(return_val.get("join_url"))
-            return_val['zoomid'] = return_val.get("id")
+            return_val['zoom_id'] = return_val.get("id")
             return_val['status'] = result.ok
             return_val['action'] = action
 
@@ -435,11 +436,11 @@ def create_or_update_zoom(excel_data):
                 pass  # we need to add alternative hosts here if possible. 
             return return_val
         else:
-            return {"action": "skipped due to incorrect meeting type in meeting_or_webinar: {}".format(excel_data.get("title"))}
+            return {"action": "skipped due to incorrect meeting type in meeting_or_webinar: {}".format(excel_data.get("name"))}
 
 
     else:
-        return {"action": "skipped ... no start or no end time: {}?".format(excel_data.get("title"))}
+        return {"action": "skipped ... no start or no end time: {}?".format(excel_data.get("name"))}
 
 
 
