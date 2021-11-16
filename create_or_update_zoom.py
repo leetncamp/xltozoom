@@ -120,7 +120,7 @@ def get_existing_meetings(user_id=None, client=None):
 
     """TODO re-write this to avoid using globals.  No need for that in the current design where each presenter gets
     their own license"""
-
+    print(f"user_id: {user_id}")
     try:
         if not client:
             from zsecrets import client
