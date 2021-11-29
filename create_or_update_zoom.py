@@ -274,7 +274,7 @@ def create_or_update_zoom(excel_data):
 
     #existing_webinars and existing_meetings for this user
     if not zoom_user_id:
-        debug()
+        from zsecrets import user_id
     existing_meetings, existing_webinars = get_existing_meetings(user_id=zoom_user_id, client=client)
 
     existing_meetings.update(existing_webinars)

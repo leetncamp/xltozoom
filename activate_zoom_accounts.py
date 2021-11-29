@@ -33,11 +33,10 @@ Example:
 
 """
 
-meeting_name = "ICLR 2021"
+meeting_name = "NeurIPS 2021"
 input(f"Using {meeting_name}: ")
 
 import os
-
 from pdb import set_trace as debug
 stop = debug
 import glob
@@ -111,8 +110,8 @@ for eml in emls:
 
     if links:
         link = links[0]
-        #driver = webdriver.Firefox()
-        driver = webdriver.Chrome()
+        driver = webdriver.Firefox()
+        #driver = webdriver.Chrome()
         #options = EdgeOptions()
         #options.use_chromium = True
         #driver = Edge(options=options)
@@ -135,7 +134,9 @@ for eml in emls:
         password.send_keys(Password)
         cpassword = driver.find_element_by_id("confirm_password")
         cpassword.send_keys(Password)
-        Continue = driver.find_element_by_link_text("Continue")
+        cpassword.send_keys("\t")
+        driver.implicitly_wait(1)
+        Continue = driver.find_element_by_xpath("//span[contains(text(), 'Continue')]")
         Continue.click()
         driver.close()
         print("Activated {}".format(login_email))
