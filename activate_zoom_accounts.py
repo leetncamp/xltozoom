@@ -32,6 +32,7 @@ Example:
 ./activate_zoom_accounts.py ~/Desktop/zoom_activation_emls_folder xltozoom/schedule.xlsx
 
 """
+import time
 
 meeting_name = "NeurIPS 2021"
 input(f"Using {meeting_name}: ")
@@ -72,14 +73,13 @@ if len(ns.file) > 1:
     headers = [i.value for i in ws[1] if i.value]
 
     for row in ws.iter_rows(min_row=2):
-
         row_data = dict(zip(headers, [i.value for i in row]))
-        host_zoom_user_email = row_data.get("host_zoom_user_email")
+        zoom_username = row_data.get("zoom_username")
         row_type = row_data.get("type")
         zoom_host_password = row_data.get("zoom_host_password")
     
-        if zoom_host_password and row_type and host_zoom_user_email:
-            data[host_zoom_user_email] = {
+        if zoom_host_password and row_type and zoom_username:
+            data[zoom_username] = {
                 "zoom_host_password": zoom_host_password,
                 "type": row_type,
                 }
@@ -135,7 +135,7 @@ for eml in emls:
         cpassword = driver.find_element_by_id("confirm_password")
         cpassword.send_keys(Password)
         cpassword.send_keys("\t")
-        driver.implicitly_wait(1)
+        time.sleep(1)
         Continue = driver.find_element_by_xpath("//span[contains(text(), 'Continue')]")
         Continue.click()
         driver.close()
