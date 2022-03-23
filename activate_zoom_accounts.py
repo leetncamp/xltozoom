@@ -3,7 +3,7 @@
 
 """
 
-This script requires MacOS and Apple Mail to work without modification.  When creating one zoom account per poster, you
+This script requires MacOS and Apple Mail to work without modification.  When creating one Zoom account per poster, you
 will need to create 2000 accounts (NeurIPS) and manually activate them.   This script helps automate that with selenium
 driver.
 
@@ -21,8 +21,8 @@ MacOS includes a selenium driver and works without much fuss.  To use this scrip
    per zoom activation email.
 
 2. Pass that folder location as a parameter to this script. An optional 2nd parameter is the schedule.xlsx file from
-   xlttozoom. If this file contains zoom_host_password  host_zoom_user_email and type fields, then these will be used
-   rather than the hard coded defaults for the account password. The event type will used as the last name. 
+   xlttozoom. If this file contains zoom_host_password  zoom_username and type fields, then these will be used
+   rather than the hard coded defaults for the account password. The event type will be used as the last name.
 
 The script will open each email, find the activation link url, open it in a browser, and set the password to the value
 defined in teh zoompwd variable below.
@@ -34,7 +34,7 @@ Example:
 """
 import time
 
-meeting_name = "NeurIPS 2021"
+meeting_name = "AISTATS 2022"
 input(f"Using {meeting_name}: ")
 
 import os
