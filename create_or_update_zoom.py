@@ -163,7 +163,7 @@ def get_existing_meetings(user_id=None, client=None):
         stop()
         existing_meetings = []
         existing_webinars = []
-    return existing_meetings, existing_webinars
+    return(existing_meetings, existing_webinars)
 
 
 def get_all_events():
@@ -194,7 +194,7 @@ def get_all_events():
         size = len(users)
         results = json.loads(client.user.list(page_size=300, page_number=count).content).get("users")
         print(len(results))
-        ids =  [i.get('id') for i in results]
+        ids = [i.get('id') for i in results]
         users = users.union(set(ids))
         count += 1
         if len(users) == size:
@@ -226,7 +226,7 @@ def get_all_events():
             print(events)
     import pickle
     pickle.dump(events, open("/tmp/events.pickle", 'wb'))
-    print (json.dumps(events, indent=4))
+    print(json.dumps(events, indent=4))
 
 
 def license_users():
@@ -244,7 +244,7 @@ def license_users():
 def create_or_update_zoom(excel_data):
 
     """Create or up a meeting or webinar. Excel_data is a dictionary of information with headers similar to row1 in the
-    excel sample file.  Handle starttime and endtime as strings or naive datetime objects depending on how the user
+    Excel sample file.  Handle starttime and endtime as strings or naive datetime objects depending on how the user
     typed them into Excel. If this function is imported into django/python, it should send timezone aware datetime
     objects. """
 
@@ -272,7 +272,7 @@ def create_or_update_zoom(excel_data):
         except ImportError:
             stop()
 
-    #existing_webinars and existing_meetings for this user
+    # existing_webinars and existing_meetings for this user
     if not zoom_user_id:
         from zsecrets import user_id
     existing_meetings, existing_webinars = get_existing_meetings(user_id=zoom_user_id, client=client)
@@ -280,13 +280,12 @@ def create_or_update_zoom(excel_data):
     existing_meetings.update(existing_webinars)
     existing_zoom_events = existing_meetings
 
-    #alternative_host = "iclrconf+{}@gmail.com".format(excel_data.get("uniqueid"))  #Now all meetings are hosted in their own account.
+    # alternative_host = "iclrconf+{}@gmail.com".format(excel_data.get("uniqueid"))  #Now all meetings are hosted in their own account.
 
     starttime = excel_data.get("starttime")
     endtime = excel_data.get("endtime")
-    
 
-    #Starttime and endtime are required in the spreadsheet even though it's possible to schedule a recurring webinar without them.
+    # Starttime and endtime are required in the spreadsheet even though it's possible to schedule a recurring webinar without them.
     if starttime and endtime:
         if type(starttime) == str:
             if not starttime.endswith("Z"):

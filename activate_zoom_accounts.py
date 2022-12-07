@@ -34,7 +34,7 @@ Example:
 """
 import time
 
-meeting_name = "ICLR 2022"
+meeting_name = "NeurIPS 2022"
 input(f"Using {meeting_name}: ")
 
 import os
@@ -92,6 +92,7 @@ default_type = "Talk"
 schedule_data = data
 
 for eml in emls:
+
     fp = open(eml, 'rb')
     msg = BytesParser().parse(fp)
     html = msg.get_payload(decode=True).decode("UTF-8")
@@ -116,23 +117,24 @@ for eml in emls:
         #options.use_chromium = True
         #driver = Edge(options=options)
         driver.get(link)
-        try:
-            login = driver.find_element_by_link_text("Sign Up with a Password")
-        except NoSuchElementException:
-            print("{} has already been processed. Press c [enter] to continue".format(login_email))
-            os.rename(eml, eml.replace(".eml", ".txt"))
+        #try:
+        #    login = driver.find_element_by_link_text("Sign Up with a Password")
+        #except NoSuchElementException:
+        #    print("{} has already been processed. Press c [enter] to continue".format(login_email))
+        #    os.rename(eml, eml.replace(".eml", ".txt"))
+#
+        #    driver.close()
+        #    continue
+        #print("Activating {} with {} and lastname of {}".format(login_email, Password, Lastname))
+        #login.click()
 
-            driver.close()
-            continue
-        print("Activating {} with {} and lastname of {}".format(login_email, Password, Lastname))
-        login.click()
         firstname = driver.find_element_by_id("firstName")
         firstname.send_keys(meeting_name)
         lastname = driver.find_element_by_id("lastName")
         lastname.send_keys(Lastname)
-        password = driver.find_element_by_id("password")
+        password = driver.find_element_by_name("password")
         password.send_keys(Password)
-        cpassword = driver.find_element_by_id("confirm_password")
+        cpassword = driver.find_element_by_name("confirmPassword")
         cpassword.send_keys(Password)
         cpassword.send_keys("\t")
         time.sleep(1)
