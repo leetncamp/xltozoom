@@ -163,7 +163,7 @@ def get_existing_meetings(user_id=None, client=None):
         stop()
         existing_meetings = []
         existing_webinars = []
-    return (existing_meetings, existing_webinars)
+    return existing_meetings, existing_webinars
 
 
 def get_all_events():
@@ -320,7 +320,7 @@ def create_or_update_zoom(excel_data):
         
         utc_starttime = UTC.normalize(starttime).strftime(timeformat)
         utc_endtime = UTC.normalize(endtime).strftime(timeformat)
-        meeting_type = excel_data.get("meeting_or_webinar")
+        meeting_type = excel_data.get("meeting_or_webinar", "meeting")
 
 
         """Update an existing meeting if there is one noted in the excel spreadsheet"""
