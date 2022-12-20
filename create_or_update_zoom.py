@@ -163,14 +163,14 @@ def get_existing_meetings(user_id=None, client=None):
         stop()
         existing_meetings = []
         existing_webinars = []
-    return existing_meetings, existing_webinars
+    return(existing_meetings, existing_webinars)
 
 
 def get_all_events():
     try:
         from zsecrets import client, user_id, meeting_defaults, webinar_defaults
     except ImportError:
-        debug()
+        stop()
 
     from zsecrets import social_client as client
     from zsecrets import social_user_id as user_id
@@ -258,7 +258,7 @@ def create_or_update_zoom(excel_data):
     uniqueid = excel_data.get("uniqueid")
     if not uniqueid:
         print("the uniqueid field is required")
-        debug()
+        stop()
         return {"action": "error"}
 
     from zsecrets import client, meeting_defaults, webinar_defaults
@@ -270,7 +270,7 @@ def create_or_update_zoom(excel_data):
         try:
             from zsecrets import user_id
         except ImportError:
-            debug()
+            stop()
 
     # existing_webinars and existing_meetings for this user
     if not zoom_user_id:
@@ -308,7 +308,7 @@ def create_or_update_zoom(excel_data):
                         timezone_name = "UTC"
                     TZ = pytz.timezone(timezone_name)
                 except:
-                    debug()
+                    stop()
                 starttime += roundingerror  # Sometimes we get a rounding error from Excel. Round to nearest.
                 starttime = starttime.replace(microsecond=0)
                 endtime += roundingerror  
@@ -320,7 +320,7 @@ def create_or_update_zoom(excel_data):
         
         utc_starttime = UTC.normalize(starttime).strftime(timeformat)
         utc_endtime = UTC.normalize(endtime).strftime(timeformat)
-        meeting_type = excel_data.get("meeting_or_webinar", "meeting")
+        meeting_type = excel_data.get("meeting_or_webinar")
 
 
         """Update an existing meeting if there is one noted in the excel spreadsheet"""
@@ -334,7 +334,7 @@ def create_or_update_zoom(excel_data):
                     try:
                         result = function_call(user_id=user_id, id=existing_zoom_event.get('id'))
                     except:
-                        debug()
+                        stop()
                     if result.ok:
                         print("Deleted {}".format(existing_zoom_event.get('id')))
                         return {"action": "Deleted"}

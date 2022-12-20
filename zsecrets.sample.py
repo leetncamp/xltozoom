@@ -47,6 +47,7 @@ meeting_defaults = {
       "registration_type": 0,
       "use_pmi": "false",
       "watermark": "false",
+      "waiting_room": "false",
     }
 }
 
