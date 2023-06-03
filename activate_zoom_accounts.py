@@ -34,7 +34,7 @@ Example:
 """
 import time
 
-meeting_name = "NeurIPS 2022"
+meeting_name = "ICLR 2023"
 input(f"Using {meeting_name}: ")
 
 import os
