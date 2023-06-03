@@ -1,5 +1,6 @@
 # XLtoZoom
 
+This project uses JWT Tokens and is deprecated by Zoom.us. 
 Create and update zoom meetings from an Excel spreadsheet
 
 ### Dependencies
