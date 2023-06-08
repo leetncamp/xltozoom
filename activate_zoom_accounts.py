@@ -34,7 +34,10 @@ Example:
 """
 import time
 
-meeting_name = "ICLR 2023"
+import selenium
+from selenium.webdriver.common.by import By
+
+meeting_name = "CVPR 2023"
 input(f"Using {meeting_name}: ")
 
 import os
@@ -127,8 +130,26 @@ for eml in emls:
         #    continue
         #print("Activating {} with {} and lastname of {}".format(login_email, Password, Lastname))
         #login.click()
-
-        firstname = driver.find_element_by_id("firstName")
+        # Try to get the first name. If it's not there it's usually because the link has expired or the
+        # profile has already been activated.
+        try:
+            firstname = driver.find_element_by_id("firstName")
+        except selenium.common.exceptions.NoSuchElementException:
+            try:
+                link_expired = driver.find_element(By.CLASS_NAME, 'error-message').text
+                print(f"{link_expired}")
+                driver.close()
+                continue
+            except selenium.common.exceptions.NoSuchElementException:
+                try:
+                    already_activated = driver.find_element(By.CLASS_NAME, 'zm-signup-layout__desc').text
+                    print(f"{already_activated}")
+                    driver.close()
+                    continue
+                except selenium.common.exceptions.NoSuchElementException:
+                    print(f"An unknown error occurred with processing {eml}")
+                    debug()
+                    continue
         firstname.send_keys(meeting_name)
         lastname = driver.find_element_by_id("lastName")
         lastname.send_keys(Lastname)
@@ -141,5 +162,5 @@ for eml in emls:
         Continue = driver.find_element_by_xpath("//span[contains(text(), 'Continue')]")
         Continue.click()
         driver.close()
-        print("Activated {}".format(login_email))
+        print(f"Activated {login_email}")
         continue

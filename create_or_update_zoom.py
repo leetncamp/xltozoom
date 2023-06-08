@@ -321,6 +321,8 @@ def create_or_update_zoom(excel_data):
         utc_starttime = UTC.normalize(starttime).strftime(timeformat)
         utc_endtime = UTC.normalize(endtime).strftime(timeformat)
         meeting_type = excel_data.get("meeting_or_webinar")
+        if not meeting_type:
+            print("Missing meeting type in field meeting_or_webinar")
 
 
         """Update an existing meeting if there is one noted in the excel spreadsheet"""
