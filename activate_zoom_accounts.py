@@ -36,8 +36,9 @@ import time
 
 import selenium
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
 
-meeting_name = "CVPR 2023"
+meeting_name = "ICML 2023"
 input(f"Using {meeting_name}: ")
 
 import os
@@ -50,12 +51,16 @@ from bs4 import BeautifulSoup as bs
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from openpyxl import load_workbook
-from msedge.selenium_tools import Edge, EdgeOptions
+from selenium.webdriver.support import expected_conditions as EC
 
 zoompwd = os.getenv("ZOOMPWD")
 
 parser = ArgumentParser()
-parser.add_argument("file", nargs="*", help="supply path to folder to collection of account activation .eml (emails dragged from Apple mail) files from zoom as first param. The 2nd param should be the schedule xlsx that has zoom_host_password, host_zoom_user_email and type.")
+parser.add_argument(
+    "file", nargs="*",
+    help="supply path to folder to collection of account activation .eml (emails dragged from Apple mail) "
+         "files from zoom as first param. The 2nd param should be the schedule xlsx that has zoom_host_password, "
+         "host_zoom_user_email and type.")
 ns = parser.parse_args()
 
 emls = glob.glob(ns.file[0] + "/*.eml")
@@ -94,6 +99,21 @@ default_type = "Talk"
 
 schedule_data = data
 
+
+def enable_cohosts(driver):
+    driver.get("https://zoom.us/profile/setting")
+    try:
+        element = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@aria-label='Co-host']/parent::label"))
+        )
+        co_host = driver.find_element(By.XPATH, "//input[@aria-label='Co-host']/parent::label")
+        co_host.click()
+    except selenium.common.exceptions.NoSuchElementException:
+        debug()
+
+    time.sleep(1)
+
+
 for eml in emls:
 
     fp = open(eml, 'rb')
@@ -115,23 +135,7 @@ for eml in emls:
     if links:
         link = links[0]
         driver = webdriver.Firefox()
-        #driver = webdriver.Chrome()
-        #options = EdgeOptions()
-        #options.use_chromium = True
-        #driver = Edge(options=options)
         driver.get(link)
-        #try:
-        #    login = driver.find_element_by_link_text("Sign Up with a Password")
-        #except NoSuchElementException:
-        #    print("{} has already been processed. Press c [enter] to continue".format(login_email))
-        #    os.rename(eml, eml.replace(".eml", ".txt"))
-#
-        #    driver.close()
-        #    continue
-        #print("Activating {} with {} and lastname of {}".format(login_email, Password, Lastname))
-        #login.click()
-        # Try to get the first name. If it's not there it's usually because the link has expired or the
-        # profile has already been activated.
         try:
             firstname = driver.find_element_by_id("firstName")
         except selenium.common.exceptions.NoSuchElementException:
@@ -139,17 +143,20 @@ for eml in emls:
                 link_expired = driver.find_element(By.CLASS_NAME, 'error-message').text
                 print(f"{link_expired}")
                 driver.close()
+                os.remove(eml)
                 continue
             except selenium.common.exceptions.NoSuchElementException:
                 try:
                     already_activated = driver.find_element(By.CLASS_NAME, 'zm-signup-layout__desc').text
                     print(f"{already_activated}")
                     driver.close()
+                    #enable_cohosts(driver)
                     continue
                 except selenium.common.exceptions.NoSuchElementException:
                     print(f"An unknown error occurred with processing {eml}")
                     debug()
                     continue
+        time.sleep(1)
         firstname.send_keys(meeting_name)
         lastname = driver.find_element_by_id("lastName")
         lastname.send_keys(Lastname)
@@ -160,7 +167,10 @@ for eml in emls:
         cpassword.send_keys("\t")
         time.sleep(1)
         Continue = driver.find_element_by_xpath("//span[contains(text(), 'Continue')]")
-        Continue.click()
-        driver.close()
+        time.sleep(2)
+        print("Click the Continue Button")
+        #Continue.click()
         print(f"Activated {login_email}")
+        enable_cohosts(driver)
+        driver.close()
         continue

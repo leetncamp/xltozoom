@@ -3,3 +3,4 @@ zsecrets.py
 ~$*
 geckodriver.log
 oidc.key
+__pycache__
