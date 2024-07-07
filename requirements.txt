@@ -2,7 +2,7 @@ certifi
 cffi==1.16.0
 charset-normalizer==3.3.1
 colorclass==2.2.2
-cryptography==41.0.5
+cryptography==42.0.4
 docopt==0.6.2
 et-xmlfile==1.1.0
 idna==3.4
